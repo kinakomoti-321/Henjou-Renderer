@@ -408,6 +408,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.cpp" />
+    <ClInclude Include="..\include\file_reader.h" />
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h" />
     <None Include="C:\Users\PC\Documents\Optix\build\lib\ptx\$(Configuration)\HenjouRenderer_generated_henjouRendererCU.cu.optixir">
     </None>

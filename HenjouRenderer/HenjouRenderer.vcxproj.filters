@@ -9,6 +9,9 @@
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\file_reader.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
@@ -33,6 +36,9 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{22B1E3DF-EAF9-3567-A50F-FA1DBE29F013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include">
+      <UniqueIdentifier>{b02ff2e4-7b9f-45f2-8c3d-9a0a54286cbc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
