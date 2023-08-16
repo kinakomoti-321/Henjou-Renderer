@@ -4,6 +4,9 @@
     <ClCompile Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\external\tinygltf\tiny_gltf.cc">
+      <Filter>Header Files\external</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h">
@@ -14,6 +17,33 @@
     </ClInclude>
     <ClInclude Include="..\include\file_reader.h">
       <Filter>Header Files\Include\Reader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\tinyobjloader\tiny_obj_loader.h">
+      <Filter>Header Files\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\external\tinygltf\tiny_gltf.h">
+      <Filter>Header Files\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\objloader.h">
+      <Filter>Header Files\Include\Reader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\texture_load.h">
+      <Filter>Header Files\Include\Reader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\material.h">
+      <Filter>Header Files\Include\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\scene.h">
+      <Filter>Header Files\Include\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\texture.h">
+      <Filter>Header Files\Include\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\float_func.h">
+      <Filter>Header Files\Include\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\log.h">
+      <Filter>Header Files\Include\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +81,12 @@
     </Filter>
     <Filter Include="Source Files\src">
       <UniqueIdentifier>{d512ca99-a147-476f-864c-fcdabf426e02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\external">
+      <UniqueIdentifier>{c6059cfd-05e6-41b5-a40b-0e0b23622384}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Include\Common">
+      <UniqueIdentifier>{9962cb3f-7dd7-4213-8cc9-2ce81f2a8c1a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

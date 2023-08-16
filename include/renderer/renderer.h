@@ -24,6 +24,9 @@
 
 #include <HenjouRenderer/henjouRenderer.h>
 #include <file_reader.h>
+#include <renderer/scene.h>
+#include <renderer/material.h>
+#include <loader/objloader.h>
 
 template <typename T>
 struct SbtRecord
@@ -80,33 +83,11 @@ struct RenderOption {
 	std::string ptx_path;
 };
 
-struct GeometryData {
-	unsigned int vertex_offset;
-	unsigned int vertex_count;
-	unsigned int index_offset;
-	unsigned int index_count;
-};
-
-struct InstanceData {
-	unsigned int geometry_id;
-	unsigned int animation_id;
-};
 
 struct AnimationData {
 	
 };
 
-struct SceneData {
-	std::vector<float3> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<float3> normals;
-	std::vector<float2> texcoords;
-	std::vector<float3> colors;
-	std::vector<unsigned int> material_ids;
-
-	std::vector<GeometryData> geometries;
-	std::vector<InstanceData> instances;
-};
 
 template <typename T>
 class CUDABuffer {
@@ -561,6 +542,10 @@ public:
 
 	void setSceneData(const SceneData& scene_data) {
 		scene_data_ = scene_data;
+	}
+
+	void loadObjFile(const std::string& filepath,const std::string& filename) {
+		loadObj(filepath, filename, scene_data_);
 	}
 
 	void build() {
