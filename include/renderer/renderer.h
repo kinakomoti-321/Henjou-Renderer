@@ -56,9 +56,6 @@ struct GASData {
 	CUdeviceptr            d_gas_output_buffer;
 };
 
-struct IASData {
-
-};
 
 enum RenderMode {
 	Default, //
@@ -81,7 +78,6 @@ struct RenderOption {
 	RenderMode render_mode = Default;
 
 	std::string ptx_path;
-
 };
 
 struct GeometryData {
@@ -97,7 +93,7 @@ struct InstanceData {
 };
 
 struct AnimationData {
-
+	
 };
 
 struct SceneData {
@@ -123,6 +119,7 @@ public:
 		data = i_data;
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&device_ptr), sizeof(T)));
 	}
+
 	~CUDABuffer()
 	{
 		if (device_ptr)
@@ -163,7 +160,6 @@ private:
 	std::vector<OptixTraversableHandle> gas_handle_;
 	std::vector<CUdeviceptr> d_gas_buffer_;
 
-
 private:
 	void optixDeviceContextInitialize() {
 		CUDA_CHECK(cudaFree(0));
@@ -195,19 +191,34 @@ private:
 			scene_data_.vertices.size() * sizeof(float3),
 			cudaMemcpyHostToDevice
 		));
+
+		CUDA_CHECK(cudaMalloc(
+			reinterpret_cast<void**>(&d_indices_buffer_),
+			scene_data_.indices.size() * sizeof(unsigned int)
+		));
+
+		CUDA_CHECK(cudaMemcpy(
+			reinterpret_cast<void*>(d_indices_buffer_),
+			scene_data_.indices.data(),
+			scene_data_.indices.size() * sizeof(unsigned int),
+			cudaMemcpyHostToDevice
+		));
 		
 		std::cout << "GAS Build Start" << std::endl;
 		gas_handle_.resize(scene_data_.geometries.size());
 		d_gas_buffer_.resize(scene_data_.geometries.size());
+		const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
 
 		for (int i = 0; i < scene_data_.geometries.size(); i++) {
-			const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
 			OptixBuildInput triangle_input = {};
 			triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 			triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
 			triangle_input.triangleArray.numVertices = scene_data_.vertices.size();
 			triangle_input.triangleArray.vertexBuffers = &d_vertices_buffer_;
-
+			triangle_input.triangleArray.indexFormat = OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
+			triangle_input.triangleArray.indexBuffer = d_indices_buffer_ + sizeof(unsigned int) * scene_data_.geometries[i].index_offset;
+			triangle_input.triangleArray.indexStrideInBytes = sizeof(unsigned int) * 3;
+			triangle_input.triangleArray.numIndexTriplets = scene_data_.geometries[i].index_count / 3;
 			triangle_input.triangleArray.flags = triangle_input_flags;
 			triangle_input.triangleArray.numSbtRecords = 1;
 
@@ -358,6 +369,7 @@ private:
 		raygen_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
 		raygen_prog_group_desc.raygen.module = optix_module_;
 		raygen_prog_group_desc.raygen.entryFunctionName = "__raygen__rg";
+
 		OPTIX_CHECK_LOG(optixProgramGroupCreate(
 			optix_context_,
 			&raygen_prog_group_desc,
@@ -371,6 +383,7 @@ private:
 		miss_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_MISS;
 		miss_prog_group_desc.miss.module = optix_module_;
 		miss_prog_group_desc.miss.entryFunctionName = "__miss__ms";
+
 		OPTIX_CHECK_LOG(optixProgramGroupCreate(
 			optix_context_,
 			&miss_prog_group_desc,
@@ -384,6 +397,7 @@ private:
 		hitgroup_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
 		hitgroup_prog_group_desc.hitgroup.moduleCH = optix_module_;
 		hitgroup_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__ch";
+
 		OPTIX_CHECK_LOG(optixProgramGroupCreate(
 			optix_context_,
 			&hitgroup_prog_group_desc,
@@ -433,6 +447,7 @@ private:
 		CUdeviceptr  raygen_record;
 		const size_t raygen_record_size = sizeof(RayGenSbtRecord);
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&raygen_record), raygen_record_size));
+
 		RayGenSbtRecord rg_sbt;
 		OPTIX_CHECK(optixSbtRecordPackHeader(raygen_prog_group_, &rg_sbt));
 		CUDA_CHECK(cudaMemcpy(
@@ -478,7 +493,7 @@ private:
 
 public:
 	Renderer() {
-
+		
 	}
 
 	~Renderer() {
@@ -499,30 +514,44 @@ public:
 		OPTIX_CHECK(optixProgramGroupDestroy(raygen_prog_group_));
 		OPTIX_CHECK(optixModuleDestroy(optix_module_));
 
-
 		OPTIX_CHECK(optixDeviceContextDestroy(optix_context_));
 	}
 
 	void testGeometry() {
 		scene_data_.vertices = {
-			{ -1.0f, 1.0f, 0.0f },
-			{ 1.0f, -1.0f, 0.0f },
-			{ 0.0f,  1.0f, 0.0f },
-			{ 0.0f,  1.0f, 0.0f }
+			{0.5f,0.5f,0.0f},
+			{0.5f,-0.5f,0.0f},
+			{-0.5f,0.5f,0.0f},
+			{-0.5f,-0.5f,0.0f},
+		};
+
+		scene_data_.indices = {
+			0, 1, 2,
+			1, 3, 2,
 		};
 
 		GeometryData geometry_data;
-		geometry_data.vertex_offset = 0;
 		geometry_data.index_count = 3;
-		scene_data_.geometries.push_back(
-			geometry_data
-		);
+		geometry_data.index_offset = 0;
+
+		GeometryData geometry_data2;
+		geometry_data2.index_count = 3;
+		geometry_data2.index_offset = 3;
+
+		scene_data_.geometries.push_back(geometry_data);
+		scene_data_.geometries.push_back(geometry_data2);
 
 		InstanceData intance_data;
 		intance_data.geometry_id = 0;
 
+		InstanceData intance_data1;
+		intance_data1.geometry_id = 1;
+
 		scene_data_.instances.push_back(
 			intance_data
+		);
+		scene_data_.instances.push_back(
+			intance_data1
 		);
 	}
 
@@ -533,6 +562,7 @@ public:
 	void setSceneData(const SceneData& scene_data) {
 		scene_data_ = scene_data;
 	}
+
 	void build() {
 		optixDeviceContextInitialize();
 		optixTraversalBuild();
@@ -540,9 +570,9 @@ public:
 		optixPipelineBuild();
 		optixSBTBuild();
 	}
+
 	void render() {
 		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-
 		{
 			CUstream stream;
 			CUDA_CHECK(cudaStreamCreate(&stream));
