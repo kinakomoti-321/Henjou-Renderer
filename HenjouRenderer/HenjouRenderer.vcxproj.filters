@@ -48,6 +48,9 @@
     <ClInclude Include="..\include\cu\cuda_buffer.h">
       <Filter>Header Files\Include\cu</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\renderer\animation.h">
+      <Filter>Header Files\Include\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">

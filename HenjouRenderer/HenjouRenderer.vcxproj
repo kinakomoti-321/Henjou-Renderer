@@ -418,6 +418,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\include\loader\material.h" />
     <ClInclude Include="..\include\loader\objloader.h" />
     <ClInclude Include="..\include\loader\texture_load.h" />
+    <ClInclude Include="..\include\renderer\animation.h" />
     <ClInclude Include="..\include\renderer\renderer.h" />
     <ClInclude Include="..\include\renderer\scene.h" />
     <ClInclude Include="..\include\renderer\texture.h" />

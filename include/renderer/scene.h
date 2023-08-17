@@ -25,7 +25,10 @@ struct SceneData {
 
 	std::vector<Material> materials;
 	std::vector<Texture> textures;
+	std::vector<unsigned int> light_prim_ids;
 
 	std::vector<GeometryData> geometries;
 	std::vector<InstanceData> instances;
+	std::vector<unsigned int> prim_offset;
 };
+

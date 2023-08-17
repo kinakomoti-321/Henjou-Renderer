@@ -43,7 +43,7 @@ typedef SbtRecord<HitGroupData>   HitGroupSbtRecord;
 
 void configureCamera(sutil::Camera& cam, const uint32_t width, const uint32_t height)
 {
-	cam.setEye({ 2.0f, 0.0f, 0.0f });
+	cam.setEye({ 6.0f, 0.0f, 0.0f });
 	cam.setLookat({ 0.0f, 0.0f, 0.0f });
 	cam.setUp({ 0.0f, 1.0f, 0.0 });
 	cam.setFovY(45.0f);
@@ -103,6 +103,7 @@ private:
 	cuh::CUDevicePointer normals_buffer_;
 	cuh::CUDevicePointer material_ids_buffer_;
 	cuh::CUDevicePointer colors_buffer_;
+	cuh::CUDevicePointer prim_offset_buffer_;
 
 	OptixDeviceContext optix_context_ = nullptr;
 
@@ -133,6 +134,7 @@ private:
 		texcoords_buffer_.cpyHostToDevice(scene_data_.texcoords);
 		material_ids_buffer_.cpyHostToDevice(scene_data_.material_ids);
 		colors_buffer_.cpyHostToDevice(scene_data_.colors);
+		prim_offset_buffer_.cpyHostToDevice(scene_data_.prim_offset);
 	}
 
 	void optixDeviceContextInitialize() {
@@ -146,6 +148,7 @@ private:
 
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
+
 	}
 
 	void optixTraversalBuild() {
@@ -560,6 +563,7 @@ public:
 			params.normals = reinterpret_cast<float3*>(normals_buffer_.device_ptr);
 			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
 			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
+			params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
 
 			params.cam_eye = cam.eye();
 			cam.UVWFrame(params.cam_u, params.cam_v, params.cam_w);

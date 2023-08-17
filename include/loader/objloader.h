@@ -157,8 +157,8 @@ bool loadObj(const std::string& filepath, const std::string& filename, SceneData
         geo_data.index_count = index_offset;
         InstanceData ins_data;
         ins_data.geometry_id = s;
+        scene_data.prim_offset.push_back(index_offset_ / 3);
         index_offset_ += index_offset;
-
         scene_data.geometries.push_back(geo_data);
         scene_data.instances.push_back(ins_data);
     }
