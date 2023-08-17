@@ -28,6 +28,7 @@
 #include <renderer/material.h>
 #include <loader/objloader.h>
 #include <cu/cuda_buffer.h>
+#include <common/log.h>
 
 template <typename T>
 struct SbtRecord
@@ -42,9 +43,9 @@ typedef SbtRecord<HitGroupData>   HitGroupSbtRecord;
 
 void configureCamera(sutil::Camera& cam, const uint32_t width, const uint32_t height)
 {
-	cam.setEye({ 0.0f, 0.0f, 2.0f });
+	cam.setEye({ 2.0f, 0.0f, 0.0f });
 	cam.setLookat({ 0.0f, 0.0f, 0.0f });
-	cam.setUp({ 0.0f, 1.0f, 3.0f });
+	cam.setUp({ 0.0f, 1.0f, 0.0 });
 	cam.setFovY(45.0f);
 	cam.setAspectRatio((float)width / (float)height);
 }
@@ -94,12 +95,14 @@ class Renderer {
 private:
 	RenderOption render_option_;
 	SceneData scene_data_;
-
-	//CUdeviceptr d_vertices_buffer_;
-	//CUdeviceptr d_indices_buffer_;
-
+	
+	//SceneData Device Buffer
 	cuh::CUDevicePointer vertices_buffer_;
 	cuh::CUDevicePointer indices_buffer_;
+	cuh::CUDevicePointer texcoords_buffer_;
+	cuh::CUDevicePointer normals_buffer_;
+	cuh::CUDevicePointer material_ids_buffer_;
+	cuh::CUDevicePointer colors_buffer_;
 
 	OptixDeviceContext optix_context_ = nullptr;
 
@@ -122,6 +125,16 @@ private:
 	std::vector<CUdeviceptr> d_gas_buffer_;
 
 private:
+
+	void cpySceneDataToDevice() {
+		vertices_buffer_.cpyHostToDevice(scene_data_.vertices);
+		indices_buffer_.cpyHostToDevice(scene_data_.indices);
+		normals_buffer_.cpyHostToDevice(scene_data_.normals);
+		texcoords_buffer_.cpyHostToDevice(scene_data_.texcoords);
+		material_ids_buffer_.cpyHostToDevice(scene_data_.material_ids);
+		colors_buffer_.cpyHostToDevice(scene_data_.colors);
+	}
+
 	void optixDeviceContextInitialize() {
 		CUDA_CHECK(cudaFree(0));
 
@@ -136,37 +149,9 @@ private:
 	}
 
 	void optixTraversalBuild() {
-
 		OptixAccelBuildOptions accel_options = {};
 		accel_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
 		accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
-
-		//CUDA_CHECK(cudaMalloc(
-		//	reinterpret_cast<void**>(&d_vertices_buffer_),
-		//	scene_data_.vertices.size() * sizeof(float3)
-		//));
-
-		//CUDA_CHECK(cudaMemcpy(
-		//	reinterpret_cast<void*>(d_vertices_buffer_),
-		//	scene_data_.vertices.data(),
-		//	scene_data_.vertices.size() * sizeof(float3),
-		//	cudaMemcpyHostToDevice
-		//));
-
-		//CUDA_CHECK(cudaMalloc(
-		//	reinterpret_cast<void**>(&d_indices_buffer_),
-		//	scene_data_.indices.size() * sizeof(unsigned int)
-		//));
-
-		//CUDA_CHECK(cudaMemcpy(
-		//	reinterpret_cast<void*>(d_indices_buffer_),
-		//	scene_data_.indices.data(),
-		//	scene_data_.indices.size() * sizeof(unsigned int),
-		//	cudaMemcpyHostToDevice
-		//));
-
-		vertices_buffer_.cpyHostToDevice(scene_data_.vertices);
-		indices_buffer_.cpyHostToDevice(scene_data_.indices);
 
 		std::cout << "GAS Build Start" << std::endl;
 		gas_handle_.resize(scene_data_.geometries.size());
@@ -470,8 +455,6 @@ public:
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_ias_buffer_)));
-		//CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_vertices_buffer_)));
-		//CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_indices_buffer_)));
 
 		OPTIX_CHECK(optixPipelineDestroy(optix_pipeline_));
 		OPTIX_CHECK(optixProgramGroupDestroy(hitgroup_prog_group_));
@@ -533,14 +516,31 @@ public:
 	}
 
 	void build() {
+		cpySceneDataToDevice();
+
+		Log::StartLog("Context Initialize");
 		optixDeviceContextInitialize();
+		Log::EndLog("Context Initialize");
+
+		Log::StartLog("Traversal Handle Build");
 		optixTraversalBuild();
+		Log::EndLog("Traversal Handle Build");
+
+		Log::StartLog("Module Build");
 		optixModuleBuild();
+		Log::EndLog("Module Build");
+
+		Log::StartLog("Pipeline Build");
 		optixPipelineBuild();
+		Log::EndLog("Pipeline Build");
+
+		Log::StartLog("SBT Build");
 		optixSBTBuild();
+		Log::EndLog("SBT Build");
 	}
 
 	void render() {
+		Log::StartLog("Render");
 		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
 		{
 			CUstream stream;
@@ -554,8 +554,17 @@ public:
 			params.image_width = render_option_.image_width;
 			params.image_height = render_option_.image_height;
 			params.traversal_handle = ias_handle_;
+
+			params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
+			params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
+			params.normals = reinterpret_cast<float3*>(normals_buffer_.device_ptr);
+			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
+			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
+
 			params.cam_eye = cam.eye();
 			cam.UVWFrame(params.cam_u, params.cam_v, params.cam_w);
+
+
 
 			CUdeviceptr d_param;
 			CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
@@ -580,6 +589,8 @@ public:
 			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
 			sutil::displayBufferWindow("test", buffer);
 		}
+
+		Log::EndLog("Render");
 	}
 };
 
