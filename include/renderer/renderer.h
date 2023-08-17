@@ -27,6 +27,7 @@
 #include <renderer/scene.h>
 #include <renderer/material.h>
 #include <loader/objloader.h>
+#include <cu/cuda_buffer.h>
 
 template <typename T>
 struct SbtRecord
@@ -85,41 +86,20 @@ struct RenderOption {
 
 
 struct AnimationData {
-	
+
 };
 
-
-template <typename T>
-class CUDABuffer {
-private:
-	T data;
-	CUdeviceptr device_ptr;
-
-public:
-	CUDABuffer(const T& i_data) {
-		data = i_data;
-		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&device_ptr), sizeof(T)));
-	}
-
-	~CUDABuffer()
-	{
-		if (device_ptr)
-			CUDA_CHECK(cudaFree(device_ptr));
-		device_ptr = 0;
-	}
-
-	CUdeviceptr getDevicePtr() const {
-		return device_ptr;
-	}
-};
 
 class Renderer {
 private:
 	RenderOption render_option_;
 	SceneData scene_data_;
 
-	CUdeviceptr d_vertices_buffer_;
-	CUdeviceptr d_indices_buffer_;
+	//CUdeviceptr d_vertices_buffer_;
+	//CUdeviceptr d_indices_buffer_;
+
+	cuh::CUDevicePointer vertices_buffer_;
+	cuh::CUDevicePointer indices_buffer_;
 
 	OptixDeviceContext optix_context_ = nullptr;
 
@@ -154,37 +134,40 @@ private:
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
 	}
-	
+
 	void optixTraversalBuild() {
 
 		OptixAccelBuildOptions accel_options = {};
 		accel_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
 		accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
-		
-		CUDA_CHECK(cudaMalloc(
-			reinterpret_cast<void**>(&d_vertices_buffer_),
-			scene_data_.vertices.size() * sizeof(float3)
-		));
 
-		CUDA_CHECK(cudaMemcpy(
-			reinterpret_cast<void*>(d_vertices_buffer_),
-			scene_data_.vertices.data(),
-			scene_data_.vertices.size() * sizeof(float3),
-			cudaMemcpyHostToDevice
-		));
+		//CUDA_CHECK(cudaMalloc(
+		//	reinterpret_cast<void**>(&d_vertices_buffer_),
+		//	scene_data_.vertices.size() * sizeof(float3)
+		//));
 
-		CUDA_CHECK(cudaMalloc(
-			reinterpret_cast<void**>(&d_indices_buffer_),
-			scene_data_.indices.size() * sizeof(unsigned int)
-		));
+		//CUDA_CHECK(cudaMemcpy(
+		//	reinterpret_cast<void*>(d_vertices_buffer_),
+		//	scene_data_.vertices.data(),
+		//	scene_data_.vertices.size() * sizeof(float3),
+		//	cudaMemcpyHostToDevice
+		//));
 
-		CUDA_CHECK(cudaMemcpy(
-			reinterpret_cast<void*>(d_indices_buffer_),
-			scene_data_.indices.data(),
-			scene_data_.indices.size() * sizeof(unsigned int),
-			cudaMemcpyHostToDevice
-		));
-		
+		//CUDA_CHECK(cudaMalloc(
+		//	reinterpret_cast<void**>(&d_indices_buffer_),
+		//	scene_data_.indices.size() * sizeof(unsigned int)
+		//));
+
+		//CUDA_CHECK(cudaMemcpy(
+		//	reinterpret_cast<void*>(d_indices_buffer_),
+		//	scene_data_.indices.data(),
+		//	scene_data_.indices.size() * sizeof(unsigned int),
+		//	cudaMemcpyHostToDevice
+		//));
+
+		vertices_buffer_.cpyHostToDevice(scene_data_.vertices);
+		indices_buffer_.cpyHostToDevice(scene_data_.indices);
+
 		std::cout << "GAS Build Start" << std::endl;
 		gas_handle_.resize(scene_data_.geometries.size());
 		d_gas_buffer_.resize(scene_data_.geometries.size());
@@ -195,9 +178,9 @@ private:
 			triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 			triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
 			triangle_input.triangleArray.numVertices = scene_data_.vertices.size();
-			triangle_input.triangleArray.vertexBuffers = &d_vertices_buffer_;
+			triangle_input.triangleArray.vertexBuffers = vertices_buffer_.getDevicePtr();
 			triangle_input.triangleArray.indexFormat = OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
-			triangle_input.triangleArray.indexBuffer = d_indices_buffer_ + sizeof(unsigned int) * scene_data_.geometries[i].index_offset;
+			triangle_input.triangleArray.indexBuffer = indices_buffer_.device_ptr + sizeof(unsigned int) * scene_data_.geometries[i].index_offset;
 			triangle_input.triangleArray.indexStrideInBytes = sizeof(unsigned int) * 3;
 			triangle_input.triangleArray.numIndexTriplets = scene_data_.geometries[i].index_count / 3;
 			triangle_input.triangleArray.flags = triangle_input_flags;
@@ -267,10 +250,10 @@ private:
 			cudaMemcpyHostToDevice
 		));
 
-		OptixAccelBuildOptions ias_build_options = {};	
+		OptixAccelBuildOptions ias_build_options = {};
 		ias_build_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
 		ias_build_options.operation = OPTIX_BUILD_OPERATION_BUILD;
-		
+
 		OptixBuildInput ias_build_input = {};
 		ias_build_input.type = OPTIX_BUILD_INPUT_TYPE_INSTANCES;
 		ias_build_input.instanceArray.instances = d_ias_buffer_;
@@ -284,7 +267,7 @@ private:
 			1,
 			&ias_buffer_sizes
 		));
-		
+
 		CUdeviceptr d_temp_buffer_ias;
 		CUDA_CHECK(cudaMalloc(
 			reinterpret_cast<void**>(&d_temp_buffer_ias),
@@ -310,7 +293,7 @@ private:
 			nullptr,            // emitted property list
 			0                   // num emitted properties
 		));
-		
+
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_ias)));
 	}
 
@@ -474,7 +457,7 @@ private:
 
 public:
 	Renderer() {
-		
+
 	}
 
 	~Renderer() {
@@ -487,7 +470,8 @@ public:
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_ias_buffer_)));
-		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_vertices_buffer_)));
+		//CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_vertices_buffer_)));
+		//CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_indices_buffer_)));
 
 		OPTIX_CHECK(optixPipelineDestroy(optix_pipeline_));
 		OPTIX_CHECK(optixProgramGroupDestroy(hitgroup_prog_group_));
@@ -544,7 +528,7 @@ public:
 		scene_data_ = scene_data;
 	}
 
-	void loadObjFile(const std::string& filepath,const std::string& filename) {
+	void loadObjFile(const std::string& filepath, const std::string& filename) {
 		loadObj(filepath, filename, scene_data_);
 	}
 

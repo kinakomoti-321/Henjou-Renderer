@@ -1,9 +1,12 @@
 #pragma once
 
+#include <algorithm>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <external/tinyobjloader/tiny_obj_loader.h>
 #include <renderer/scene.h>
 #include <loader/texture_load.h>
+
+#include <sutil/sutil.h>
 
 bool loadObj(const std::string& filepath, const std::string& filename, SceneData& scene_data) {
 	tinyobj::ObjReaderConfig reader_config;

@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <iostream>
+#include <common/log.h>
 
 
 struct Material

@@ -98,11 +98,11 @@ public:
 				float B = pixel[idx].z;
 
 				// äeê¨ï™Ç[0, 255]Ç…ä‹Ç‹ÇÍÇÈÇÊÇ§Ç…ïœä∑ÇµèoóÕ
-				file << static_cast<unsigned int>(std::clamp(255.0f * R, 0.0f, 255.0f))
+				file << static_cast<unsigned int>(clamp(255.0f * R, 0.0f, 255.0f))
 					<< " ";
-				file << static_cast<unsigned int>(std::clamp(255.0f * G, 0.0f, 255.0f))
+				file << static_cast<unsigned int>(clamp(255.0f * G, 0.0f, 255.0f))
 					<< " ";
-				file << static_cast<unsigned int>(std::clamp(255.0f * B, 0.0f, 255.0f))
+				file << static_cast<unsigned int>(clamp(255.0f * B, 0.0f, 255.0f))
 					<< std::endl;
 			}
 		}

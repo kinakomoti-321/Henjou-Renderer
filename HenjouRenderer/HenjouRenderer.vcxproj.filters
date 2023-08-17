@@ -45,6 +45,9 @@
     <ClInclude Include="..\include\common\log.h">
       <Filter>Header Files\Include\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\cu\cuda_buffer.h">
+      <Filter>Header Files\Include\cu</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
@@ -87,6 +90,9 @@
     </Filter>
     <Filter Include="Header Files\Include\Common">
       <UniqueIdentifier>{9962cb3f-7dd7-4213-8cc9-2ce81f2a8c1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Include\cu">
+      <UniqueIdentifier>{7b604b2d-605f-4889-98c2-8ba64b664bf2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

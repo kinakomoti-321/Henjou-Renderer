@@ -413,6 +413,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\external\tinyobjloader\tiny_obj_loader.h" />
     <ClInclude Include="..\include\common\float_func.h" />
     <ClInclude Include="..\include\common\log.h" />
+    <ClInclude Include="..\include\cu\cuda_buffer.h" />
     <ClInclude Include="..\include\file_reader.h" />
     <ClInclude Include="..\include\loader\material.h" />
     <ClInclude Include="..\include\loader\objloader.h" />
