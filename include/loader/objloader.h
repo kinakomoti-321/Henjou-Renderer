@@ -10,12 +10,9 @@
 #include <spdlog/spdlog.h>
 
 bool loadObj(const std::string& filepath, const std::string& filename, SceneData& scene_data) {
-	tinyobj::ObjReaderConfig reader_config;
-	reader_config.mtl_search_path = "./"; // Path to material files
-
 	tinyobj::ObjReader reader;
 
-	if (!reader.ParseFromFile(filepath + filename, reader_config)) {
+	if (!reader.ParseFromFile(filepath + filename)) {
 		if (!reader.Error().empty()) {
 			std::cerr << "TinyObjReader: " << reader.Error();
 		}

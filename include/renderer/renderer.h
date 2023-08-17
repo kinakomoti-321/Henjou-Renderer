@@ -98,7 +98,7 @@ class Renderer {
 private:
 	RenderOption render_option_;
 	SceneData scene_data_;
-	
+
 	//SceneData Device Buffer
 	cuh::CUDevicePointer vertices_buffer_;
 	cuh::CUDevicePointer indices_buffer_;
@@ -118,7 +118,7 @@ private:
 	OptixProgramGroup raygen_prog_group_ = nullptr;
 	OptixProgramGroup miss_prog_group_ = nullptr;
 	OptixProgramGroup hitgroup_prog_group_ = nullptr;
-	OptixProgramGroup any_prog_group_ = nullptr;
+	OptixProgramGroup hitgroup_prog_shadow_group_ = nullptr;
 
 	OptixShaderBindingTable optix_sbt_ = {};
 
@@ -127,6 +127,8 @@ private:
 
 	std::vector<OptixTraversableHandle> gas_handle_;
 	std::vector<CUdeviceptr> d_gas_buffer_;
+
+	const unsigned int RAYTYPE_ = 2;
 
 private:
 
@@ -140,11 +142,12 @@ private:
 		prim_offset_buffer_.cpyHostToDevice(scene_data_.prim_offset);
 
 		spdlog::info("Scene Data");
-		spdlog::info("number of vertex : {:16d}",scene_data_.vertices.size());
+		spdlog::info("number of vertex : {:16d}", scene_data_.vertices.size());
 		spdlog::info("number of index : {:16d}", scene_data_.indices.size());
 		spdlog::info("number of normal : {:16d}", scene_data_.normals.size());
 		spdlog::info("number of texcoord : {:16d}", scene_data_.texcoords.size());
 		spdlog::info("number of material id : {:16d}", scene_data_.material_ids.size());
+		spdlog::info("number of material : {:16d}", scene_data_.materials.size());
 		spdlog::info("number of color : {:16d}", scene_data_.colors.size());
 		spdlog::info("number of prim offset : {:16d}", scene_data_.prim_offset.size());
 	}
@@ -172,9 +175,9 @@ private:
 		gas_handle_.resize(scene_data_.geometries.size());
 		d_gas_buffer_.resize(scene_data_.geometries.size());
 		const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
-		
+
 		spdlog::info("GAS Build");
-		spdlog::info("GAS Number : {:5d}",scene_data_.geometries.size());
+		spdlog::info("GAS Number : {:5d}", scene_data_.geometries.size());
 
 		Timer timer;
 		timer.Start();
@@ -230,8 +233,8 @@ private:
 		}
 
 		timer.Stop();
-		
-		spdlog::info("GAS Build End : {:05f} ms ",timer.getTimeMS());
+
+		spdlog::info("GAS Build End : {:05f} ms ", timer.getTimeMS());
 
 		spdlog::info("IAS Build");
 		spdlog::info("IAS Number : {:5d}", scene_data_.instances.size());
@@ -307,7 +310,7 @@ private:
 		));
 
 		timer.Stop();
-		spdlog::info("IAS Build End : {:05f} ms",timer.getTimeMS());
+		spdlog::info("IAS Build End : {:05f} ms", timer.getTimeMS());
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_ias)));
 	}
@@ -376,7 +379,8 @@ private:
 		hitgroup_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
 		hitgroup_prog_group_desc.hitgroup.moduleCH = optix_module_;
 		hitgroup_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__ch";
-
+		hitgroup_prog_group_desc.hitgroup.moduleAH = optix_module_;
+		hitgroup_prog_group_desc.hitgroup.entryFunctionNameAH = "__anyhit__ch";
 		OPTIX_CHECK_LOG(optixProgramGroupCreate(
 			optix_context_,
 			&hitgroup_prog_group_desc,
@@ -386,9 +390,25 @@ private:
 			&hitgroup_prog_group_
 		));
 
+		memset(&hitgroup_prog_group_desc, 0, sizeof(OptixProgramGroupDesc));
+		hitgroup_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
+		hitgroup_prog_group_desc.hitgroup.moduleCH = optix_module_;
+		hitgroup_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__shadow";
+		hitgroup_prog_group_desc.hitgroup.moduleAH = optix_module_;
+		hitgroup_prog_group_desc.hitgroup.entryFunctionNameAH = "__anyhit__shadow";
+
+		OPTIX_CHECK_LOG(optixProgramGroupCreate(
+			optix_context_,
+			&hitgroup_prog_group_desc,
+			1,   // num program groups
+			&program_group_options,
+			LOG, &LOG_SIZE,
+			&hitgroup_prog_shadow_group_
+		));
+
 
 		const uint32_t    max_trace_depth = 1;
-		OptixProgramGroup program_groups[] = { raygen_prog_group_, miss_prog_group_, hitgroup_prog_group_ };
+		OptixProgramGroup program_groups[] = { raygen_prog_group_, miss_prog_group_, hitgroup_prog_group_,hitgroup_prog_shadow_group_};
 
 		OptixPipelineLinkOptions pipeline_link_options = {};
 		pipeline_link_options.maxTraceDepth = max_trace_depth;
@@ -449,25 +469,106 @@ private:
 			cudaMemcpyHostToDevice
 		));
 
+		const unsigned int MATCOUNT = scene_data_.materials.size();
+
 		CUdeviceptr hitgroup_record;
-		size_t      hitgroup_record_size = sizeof(HitGroupSbtRecord);
+		size_t      hitgroup_record_size = sizeof(HitGroupSbtRecord) * RAYTYPE_ * MATCOUNT;
+
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&hitgroup_record), hitgroup_record_size));
-		HitGroupSbtRecord hg_sbt;
-		OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_group_, &hg_sbt));
+
+		std::vector<HitGroupSbtRecord> hg_sbts(RAYTYPE_ * MATCOUNT);
+		for (int i = 0; i < MATCOUNT; i++) {
+			{
+				unsigned int sbt_idx = i * RAYTYPE_;
+
+				hg_sbts[sbt_idx].data.basecolor = scene_data_.materials[i].base_color;
+				hg_sbts[sbt_idx].data.basecolor_tex = scene_data_.materials[i].base_color_tex;
+
+				hg_sbts[sbt_idx].data.emmision = scene_data_.materials[i].emmision_color;
+				hg_sbts[sbt_idx].data.emmision_tex = scene_data_.materials[i].emmision_color_tex;
+				hg_sbts[sbt_idx].data.is_light = scene_data_.materials[i].is_light;
+
+				hg_sbts[sbt_idx].data.metallic = scene_data_.materials[i].metallic;
+				hg_sbts[sbt_idx].data.metallic_tex = scene_data_.materials[i].metallic_tex;
+
+				hg_sbts[sbt_idx].data.roughness = scene_data_.materials[i].roughness;
+				hg_sbts[sbt_idx].data.roughness_tex = scene_data_.materials[i].roughness_tex;
+
+				hg_sbts[sbt_idx].data.specular = scene_data_.materials[i].specular;
+
+				hg_sbts[sbt_idx].data.sheen = scene_data_.materials[i].sheen;
+
+				hg_sbts[sbt_idx].data.clearcoat = scene_data_.materials[i].clearcoat;
+				hg_sbts[sbt_idx].data.clearcoat_tex = scene_data_.materials[i].clearcoat_tex;
+
+				hg_sbts[sbt_idx].data.bump_tex = scene_data_.materials[i].bump_tex;
+				hg_sbts[sbt_idx].data.normal_tex = scene_data_.materials[i].normal_tex;
+
+				hg_sbts[sbt_idx].data.transmission = scene_data_.materials[i].transmission;
+				hg_sbts[sbt_idx].data.ior = scene_data_.materials[i].ior;
+
+				hg_sbts[sbt_idx].data.ideal_specular = scene_data_.materials[i].ideal_specular;
+
+				OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_group_, &hg_sbts[sbt_idx]));
+			}
+
+			{
+				unsigned int sbt_idx = i * RAYTYPE_ + 1;
+
+				hg_sbts[sbt_idx].data.basecolor = scene_data_.materials[i].base_color;
+				hg_sbts[sbt_idx].data.basecolor_tex = scene_data_.materials[i].base_color_tex;
+
+				hg_sbts[sbt_idx].data.emmision = scene_data_.materials[i].emmision_color;
+				hg_sbts[sbt_idx].data.emmision_tex = scene_data_.materials[i].emmision_color_tex;
+				hg_sbts[sbt_idx].data.is_light = scene_data_.materials[i].is_light;
+
+				hg_sbts[sbt_idx].data.metallic = scene_data_.materials[i].metallic;
+				hg_sbts[sbt_idx].data.metallic_tex = scene_data_.materials[i].metallic_tex;
+
+				hg_sbts[sbt_idx].data.roughness = scene_data_.materials[i].roughness;
+				hg_sbts[sbt_idx].data.roughness_tex = scene_data_.materials[i].roughness_tex;
+
+				hg_sbts[sbt_idx].data.specular = scene_data_.materials[i].specular;
+
+				hg_sbts[sbt_idx].data.sheen = scene_data_.materials[i].sheen;
+
+				hg_sbts[sbt_idx].data.clearcoat = scene_data_.materials[i].clearcoat;
+				hg_sbts[sbt_idx].data.clearcoat_tex = scene_data_.materials[i].clearcoat_tex;
+
+				hg_sbts[sbt_idx].data.bump_tex = scene_data_.materials[i].bump_tex;
+				hg_sbts[sbt_idx].data.normal_tex = scene_data_.materials[i].normal_tex;
+
+				hg_sbts[sbt_idx].data.transmission = scene_data_.materials[i].transmission;
+				hg_sbts[sbt_idx].data.ior = scene_data_.materials[i].ior;
+
+				hg_sbts[sbt_idx].data.ideal_specular = scene_data_.materials[i].ideal_specular;
+				OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_shadow_group_, &hg_sbts[sbt_idx]));
+			}
+		}
+
 		CUDA_CHECK(cudaMemcpy(
 			reinterpret_cast<void*>(hitgroup_record),
-			&hg_sbt,
+			hg_sbts.data(),
 			hitgroup_record_size,
 			cudaMemcpyHostToDevice
 		));
+
+		//HitGroupSbtRecord hg_sbt;
+		//OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_group_, &hg_sbt));
+		//CUDA_CHECK(cudaMemcpy(
+		//	reinterpret_cast<void*>(hitgroup_record),
+		//	&hg_sbt,
+		//	hitgroup_record_size,
+		//	cudaMemcpyHostToDevice
+		//));
 
 		optix_sbt_.raygenRecord = raygen_record;
 		optix_sbt_.missRecordBase = miss_record;
 		optix_sbt_.missRecordStrideInBytes = sizeof(MissSbtRecord);
 		optix_sbt_.missRecordCount = 1;
 		optix_sbt_.hitgroupRecordBase = hitgroup_record;
-		optix_sbt_.hitgroupRecordStrideInBytes = sizeof(HitGroupSbtRecord);
-		optix_sbt_.hitgroupRecordCount = 1;
+		optix_sbt_.hitgroupRecordStrideInBytes = static_cast<uint32_t>(hitgroup_record_size);
+		optix_sbt_.hitgroupRecordCount = RAYTYPE_ * MATCOUNT;
 	}
 
 public:
@@ -543,12 +644,12 @@ public:
 
 	void loadObjFile(const std::string& filepath, const std::string& filename) {
 		Log::StartLog("Load Obj file");
-		spdlog::info("loading obj file : {}{}",filepath,filename);
-		
+		spdlog::info("loading obj file : {}{}", filepath, filename);
+
 		Timer timer;
 		timer.Start();
 		if (!loadObj(filepath, filename, scene_data_)) {
-			spdlog::warn("Faild loading obj file : {}{}",filepath,filename);
+			spdlog::warn("Faild loading obj file : {}{}", filepath, filename);
 		}
 		timer.Stop();
 
