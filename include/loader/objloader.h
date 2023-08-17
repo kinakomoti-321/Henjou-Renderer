@@ -7,6 +7,7 @@
 #include <loader/texture_load.h>
 
 #include <sutil/sutil.h>
+#include <spdlog/spdlog.h>
 
 bool loadObj(const std::string& filepath, const std::string& filename, SceneData& scene_data) {
 	tinyobj::ObjReaderConfig reader_config;
@@ -25,6 +26,8 @@ bool loadObj(const std::string& filepath, const std::string& filename, SceneData
 		std::cout << "TinyObjReader: " << reader.Warning();
 	}
 
+    spdlog::info("Loaded Obj : {}", filename);
+
 	auto& attrib = reader.GetAttrib();
 	auto& shapes = reader.GetShapes();
 	auto& materials = reader.GetMaterials();
@@ -39,7 +42,8 @@ bool loadObj(const std::string& filepath, const std::string& filename, SceneData
     bool has_material = materials.size() > 0;
 
     std::map<std::string, int> known_tex;
-
+    
+    spdlog::info("Scene Data Setting...");
     if (has_material) {
         for (int i = 0; i < materials.size(); i++) {
             //Matrial setting
@@ -90,6 +94,7 @@ bool loadObj(const std::string& filepath, const std::string& filename, SceneData
         scene_data.materials.push_back(mat);
     }
 
+	spdlog::info("Material Data...Done");
 
     //シェイプ数分のループ
     for (size_t s = 0; s < shapes.size(); s++) {
@@ -162,5 +167,7 @@ bool loadObj(const std::string& filepath, const std::string& filename, SceneData
         scene_data.geometries.push_back(geo_data);
         scene_data.instances.push_back(ins_data);
     }
+	spdlog::info("Shape Data...Done");
 
+    spdlog::info("Scene Data...Done");
 }

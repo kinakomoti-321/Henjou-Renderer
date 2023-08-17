@@ -29,6 +29,7 @@
 #include <loader/objloader.h>
 #include <cu/cuda_buffer.h>
 #include <common/log.h>
+#include <common/timer.h>
 
 #include <spdlog/spdlog.h>
 
@@ -174,6 +175,9 @@ private:
 		
 		spdlog::info("GAS Build");
 		spdlog::info("GAS Number : {:5d}",scene_data_.geometries.size());
+
+		Timer timer;
+		timer.Start();
 		for (int i = 0; i < scene_data_.geometries.size(); i++) {
 			OptixBuildInput triangle_input = {};
 			triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
@@ -224,12 +228,16 @@ private:
 
 			CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_gas)));
 		}
+
+		timer.Stop();
 		
-		spdlog::info("GAS Build End : Time {} ");
+		spdlog::info("GAS Build End : {:05f} ms ",timer.getTimeMS());
 
 		spdlog::info("IAS Build");
 		spdlog::info("IAS Number : {:5d}", scene_data_.instances.size());
 		std::vector<OptixInstance> optix_instances(scene_data_.instances.size());
+
+		timer.Start();
 		for (int i = 0; i < scene_data_.instances.size(); i++) {
 			optix_instances[i].instanceId = i;
 			optix_instances[i].sbtOffset = 0;
@@ -240,6 +248,7 @@ private:
 			float transform[12] = { 1,0,0,0,0,1,0,0,0,0,1,0 };
 			memcpy(optix_instances[i].transform, transform, sizeof(float) * 12);
 		}
+
 
 		CUDA_CHECK(cudaMalloc(
 			reinterpret_cast<void**>(&d_ias_buffer_),
@@ -297,7 +306,8 @@ private:
 			0                   // num emitted properties
 		));
 
-		spdlog::info("IAS Build End");
+		timer.Stop();
+		spdlog::info("IAS Build End : {:05f} ms",timer.getTimeMS());
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_ias)));
 	}
@@ -534,9 +544,15 @@ public:
 	void loadObjFile(const std::string& filepath, const std::string& filename) {
 		Log::StartLog("Load Obj file");
 		spdlog::info("loading obj file : {}{}",filepath,filename);
+		
+		Timer timer;
+		timer.Start();
 		if (!loadObj(filepath, filename, scene_data_)) {
 			spdlog::warn("Faild loading obj file : {}{}",filepath,filename);
 		}
+		timer.Stop();
+
+		spdlog::info("Loading Time {:05f}", timer.getTimeMS());
 		spdlog::info("Finished loading obj file: {}{}", filepath, filename);
 		Log::EndLog("Load Obj file");
 	}
