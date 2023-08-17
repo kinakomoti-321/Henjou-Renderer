@@ -51,6 +51,9 @@
     <ClInclude Include="..\include\renderer\animation.h">
       <Filter>Header Files\Include\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\common\timer.h">
+      <Filter>Header Files\Include\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">

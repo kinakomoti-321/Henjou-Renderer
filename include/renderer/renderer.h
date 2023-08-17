@@ -30,6 +30,8 @@
 #include <cu/cuda_buffer.h>
 #include <common/log.h>
 
+#include <spdlog/spdlog.h>
+
 template <typename T>
 struct SbtRecord
 {
@@ -135,6 +137,15 @@ private:
 		material_ids_buffer_.cpyHostToDevice(scene_data_.material_ids);
 		colors_buffer_.cpyHostToDevice(scene_data_.colors);
 		prim_offset_buffer_.cpyHostToDevice(scene_data_.prim_offset);
+
+		spdlog::info("Scene Data");
+		spdlog::info("number of vertex : {:16d}",scene_data_.vertices.size());
+		spdlog::info("number of index : {:16d}", scene_data_.indices.size());
+		spdlog::info("number of normal : {:16d}", scene_data_.normals.size());
+		spdlog::info("number of texcoord : {:16d}", scene_data_.texcoords.size());
+		spdlog::info("number of material id : {:16d}", scene_data_.material_ids.size());
+		spdlog::info("number of color : {:16d}", scene_data_.colors.size());
+		spdlog::info("number of prim offset : {:16d}", scene_data_.prim_offset.size());
 	}
 
 	void optixDeviceContextInitialize() {
@@ -149,6 +160,7 @@ private:
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
 
+		spdlog::info("Optix Device Context Initialize");
 	}
 
 	void optixTraversalBuild() {
@@ -156,11 +168,12 @@ private:
 		accel_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
 		accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
 
-		std::cout << "GAS Build Start" << std::endl;
 		gas_handle_.resize(scene_data_.geometries.size());
 		d_gas_buffer_.resize(scene_data_.geometries.size());
 		const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
-
+		
+		spdlog::info("GAS Build");
+		spdlog::info("GAS Number : {:5d}",scene_data_.geometries.size());
 		for (int i = 0; i < scene_data_.geometries.size(); i++) {
 			OptixBuildInput triangle_input = {};
 			triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
@@ -211,9 +224,11 @@ private:
 
 			CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_gas)));
 		}
+		
+		spdlog::info("GAS Build End : Time {} ");
 
-		std::cout << "GAS Build End" << std::endl;
-
+		spdlog::info("IAS Build");
+		spdlog::info("IAS Number : {:5d}", scene_data_.instances.size());
 		std::vector<OptixInstance> optix_instances(scene_data_.instances.size());
 		for (int i = 0; i < scene_data_.instances.size(); i++) {
 			optix_instances[i].instanceId = i;
@@ -281,6 +296,8 @@ private:
 			nullptr,            // emitted property list
 			0                   // num emitted properties
 		));
+
+		spdlog::info("IAS Build End");
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_temp_buffer_ias)));
 	}
@@ -515,11 +532,19 @@ public:
 	}
 
 	void loadObjFile(const std::string& filepath, const std::string& filename) {
-		loadObj(filepath, filename, scene_data_);
+		Log::StartLog("Load Obj file");
+		spdlog::info("loading obj file : {}{}",filepath,filename);
+		if (!loadObj(filepath, filename, scene_data_)) {
+			spdlog::warn("Faild loading obj file : {}{}",filepath,filename);
+		}
+		spdlog::info("Finished loading obj file: {}{}", filepath, filename);
+		Log::EndLog("Load Obj file");
 	}
 
 	void build() {
+		Log::StartLog("SceneData Copy to Device Memory");
 		cpySceneDataToDevice();
+		Log::EndLog("SceneData Copy to Device Memory");
 
 		Log::StartLog("Context Initialize");
 		optixDeviceContextInitialize();
