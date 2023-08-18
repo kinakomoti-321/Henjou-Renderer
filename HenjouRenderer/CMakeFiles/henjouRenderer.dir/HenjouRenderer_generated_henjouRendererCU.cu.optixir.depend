@@ -113,5 +113,6 @@ SET(CUDA_NVCC_DEPEND
  "C:/Users/PC/Documents/Optix/SDK/cuda/helpers.h"
  "C:/Users/PC/Documents/Optix/SDK/sutil/Preprocessor.h"
  "C:/Users/PC/Documents/Optix/SDK/sutil/vec_math.h"
+ "C:/Users/PC/Documents/Optix/build/include/kernel/cmj.h"
 )
 

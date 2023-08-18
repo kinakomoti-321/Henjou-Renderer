@@ -5,7 +5,6 @@
 //corrected multi-jittered sampling
 //https://blog.teastat.uk/post/2022/08/use-cmj-in-montecarlo-raytracing/
 
-const unsigned int CMJ_M = 16, CMJ_N = 16;
 
 static __forceinline__ __device__ unsigned int cmj_permute(unsigned int i, unsigned int l,
     unsigned int p) {
@@ -53,7 +52,7 @@ static __forceinline__ __device__ float cmj_randfloat(unsigned int i, unsigned i
 }
 
 static __forceinline__ __device__ float2 cmj(unsigned int s, unsigned int p) {
-
+    const unsigned int CMJ_M = 16, CMJ_N = 16;
     s = cmj_permute(s, CMJ_M * CMJ_N, p * 0x51633e2d); 
     unsigned int sx = cmj_permute(s % CMJ_M, CMJ_M, p * 0xa511e9b3);
     unsigned int sy = cmj_permute(s / CMJ_M, CMJ_N, p * 0x63d83595);
@@ -87,6 +86,7 @@ __device__ struct CMJstate {
 };
 
 static __forceinline__ __device__ float2 cmj_2d(CMJstate& state) {
+    const unsigned int CMJ_M = 16, CMJ_N = 16;
     unsigned int s = state.n_spp % (CMJ_M * CMJ_N);
     unsigned int p = xxhash32(make_uint4(state.n_spp / (CMJ_M * CMJ_N),state.pixel_index, state.dimension, state.seed));
 
