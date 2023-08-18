@@ -54,6 +54,9 @@
     <ClInclude Include="..\include\common\timer.h">
       <Filter>Header Files\Include\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\kernel\math.h">
+      <Filter>Header Files\Include\kernel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
@@ -99,6 +102,9 @@
     </Filter>
     <Filter Include="Header Files\Include\cu">
       <UniqueIdentifier>{7b604b2d-605f-4889-98c2-8ba64b664bf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Include\kernel">
+      <UniqueIdentifier>{82e66c3e-2148-416e-b8b4-0a925ccd1194}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

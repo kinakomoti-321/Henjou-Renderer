@@ -416,6 +416,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\include\common\timer.h" />
     <ClInclude Include="..\include\cu\cuda_buffer.h" />
     <ClInclude Include="..\include\file_reader.h" />
+    <ClInclude Include="..\include\kernel\math.h" />
     <ClInclude Include="..\include\loader\material.h" />
     <ClInclude Include="..\include\loader\objloader.h" />
     <ClInclude Include="..\include\loader\texture_load.h" />

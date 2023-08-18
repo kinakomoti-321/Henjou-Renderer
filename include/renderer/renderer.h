@@ -151,7 +151,6 @@ private:
 		spdlog::info("number of color : {:16d}", scene_data_.colors.size());
 		spdlog::info("number of prim offset : {:16d}", scene_data_.prim_offset.size());
 
-		std::cout << scene_data_.material_ids << std::endl;
 	}
 
 	void optixDeviceContextInitialize() {
@@ -176,7 +175,11 @@ private:
 
 		gas_handle_.resize(scene_data_.geometries.size());
 		d_gas_buffer_.resize(scene_data_.geometries.size());
-		const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
+		//const uint32_t triangle_input_flags[2] = { OPTIX_GEOMETRY_FLAG_NONE,OPTIX_GEOMETRY_FLAG_NONE };
+		std::vector<uint32_t> triangle_input_flags(scene_data_.materials.size());
+		for (int i = 0; i < scene_data_.materials.size(); i++) {
+			triangle_input_flags[i] = OPTIX_GEOMETRY_FLAG_NONE;
+		}
 
 		spdlog::info("GAS Build");
 		spdlog::info("GAS Number : {:5d}", scene_data_.geometries.size());
@@ -193,8 +196,9 @@ private:
 			triangle_input.triangleArray.indexBuffer = indices_buffer_.device_ptr + sizeof(unsigned int) * scene_data_.geometries[i].index_offset;
 			triangle_input.triangleArray.indexStrideInBytes = sizeof(unsigned int) * 3;
 			triangle_input.triangleArray.numIndexTriplets = scene_data_.geometries[i].index_count / 3;
-			triangle_input.triangleArray.flags = triangle_input_flags;
-			triangle_input.triangleArray.numSbtRecords = 1;
+
+			triangle_input.triangleArray.flags = triangle_input_flags.data();
+			triangle_input.triangleArray.numSbtRecords = scene_data_.materials.size();
 
 			triangle_input.triangleArray.sbtIndexOffsetBuffer = material_ids_buffer_.device_ptr + sizeof(unsigned int) * scene_data_.geometries[i].index_offset / 3;
 			triangle_input.triangleArray.sbtIndexOffsetSizeInBytes = sizeof(unsigned int);
@@ -712,6 +716,7 @@ public:
 			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
 			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
 			params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
+			params.RAYTYPE = RAYTYPE_;
 
 			params.cam_eye = cam.eye();
 			cam.UVWFrame(params.cam_u, params.cam_v, params.cam_w);
