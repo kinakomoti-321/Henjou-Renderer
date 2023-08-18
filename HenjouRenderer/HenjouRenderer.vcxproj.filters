@@ -57,6 +57,9 @@
     <ClInclude Include="..\include\kernel\math.h">
       <Filter>Header Files\Include\kernel</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\kernel\cmj.h">
+      <Filter>Header Files\Include\kernel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
