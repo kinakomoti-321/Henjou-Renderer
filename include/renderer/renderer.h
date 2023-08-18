@@ -46,7 +46,7 @@ typedef SbtRecord<HitGroupData>   HitGroupSbtRecord;
 
 void configureCamera(sutil::Camera& cam, const uint32_t width, const uint32_t height)
 {
-	cam.setEye({ 6.0f, 0.0f, 0.0f });
+	cam.setEye({ 4.0f, 0.0f, 0.0f });
 	cam.setLookat({ 0.0f, 0.0f, 0.0f });
 	cam.setUp({ 0.0f, 1.0f, 0.0 });
 	cam.setFovY(45.0f);
@@ -72,8 +72,8 @@ enum RenderMode {
 };
 
 struct RenderOption {
-	unsigned int image_width = 512;
-	unsigned int image_height = 512;
+	unsigned int image_width = 1024;
+	unsigned int image_height = 1024;
 
 	bool is_animation;
 	unsigned int fps;
@@ -150,6 +150,8 @@ private:
 		spdlog::info("number of material : {:16d}", scene_data_.materials.size());
 		spdlog::info("number of color : {:16d}", scene_data_.colors.size());
 		spdlog::info("number of prim offset : {:16d}", scene_data_.prim_offset.size());
+
+		std::cout << scene_data_.material_ids << std::endl;
 	}
 
 	void optixDeviceContextInitialize() {
@@ -193,6 +195,10 @@ private:
 			triangle_input.triangleArray.numIndexTriplets = scene_data_.geometries[i].index_count / 3;
 			triangle_input.triangleArray.flags = triangle_input_flags;
 			triangle_input.triangleArray.numSbtRecords = 1;
+
+			triangle_input.triangleArray.sbtIndexOffsetBuffer = material_ids_buffer_.device_ptr + sizeof(unsigned int) * scene_data_.geometries[i].index_offset / 3;
+			triangle_input.triangleArray.sbtIndexOffsetSizeInBytes = sizeof(unsigned int);
+			triangle_input.triangleArray.sbtIndexOffsetStrideInBytes = sizeof(unsigned int);
 
 			OptixAccelBufferSizes gas_buffer_sizes;
 			OPTIX_CHECK(optixAccelComputeMemoryUsage(
@@ -545,7 +551,6 @@ private:
 				OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_shadow_group_, &hg_sbts[sbt_idx]));
 			}
 		}
-
 		CUDA_CHECK(cudaMemcpy(
 			reinterpret_cast<void*>(hitgroup_record),
 			hg_sbts.data(),
@@ -567,7 +572,7 @@ private:
 		optix_sbt_.missRecordStrideInBytes = sizeof(MissSbtRecord);
 		optix_sbt_.missRecordCount = 1;
 		optix_sbt_.hitgroupRecordBase = hitgroup_record;
-		optix_sbt_.hitgroupRecordStrideInBytes = static_cast<uint32_t>(hitgroup_record_size);
+		optix_sbt_.hitgroupRecordStrideInBytes = sizeof(HitGroupSbtRecord);
 		optix_sbt_.hitgroupRecordCount = RAYTYPE_ * MATCOUNT;
 	}
 
@@ -589,6 +594,7 @@ public:
 
 		OPTIX_CHECK(optixPipelineDestroy(optix_pipeline_));
 		OPTIX_CHECK(optixProgramGroupDestroy(hitgroup_prog_group_));
+		OPTIX_CHECK(optixProgramGroupDestroy(hitgroup_prog_shadow_group_));
 		OPTIX_CHECK(optixProgramGroupDestroy(miss_prog_group_));
 		OPTIX_CHECK(optixProgramGroupDestroy(raygen_prog_group_));
 		OPTIX_CHECK(optixModuleDestroy(optix_module_));

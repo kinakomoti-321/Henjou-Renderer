@@ -54,3 +54,12 @@ std::ostream& operator<<(std::ostream& stream, const std::map<T, Q> f)
 	}
 	return stream;
 }
+
+template <typename T>
+std::ostream& operator<<(std::ostream& stream, const std::vector<T> f)
+{
+	for (auto& f1 : f) {
+		stream << f1 << "," << " ";
+	}
+	return stream;
+}
