@@ -470,7 +470,7 @@ private:
 		size_t      miss_record_size = sizeof(MissSbtRecord);
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&miss_record), miss_record_size));
 		MissSbtRecord ms_sbt;
-		ms_sbt.data = { 0.3f, 0.1f, 0.2f };
+		ms_sbt.data = { 0.0f, 0.0f, 0.0f };
 		OPTIX_CHECK(optixSbtRecordPackHeader(miss_prog_group_, &ms_sbt));
 		CUDA_CHECK(cudaMemcpy(
 			reinterpret_cast<void*>(miss_record),

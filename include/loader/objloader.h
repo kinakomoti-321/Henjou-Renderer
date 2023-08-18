@@ -79,6 +79,7 @@ bool loadObj(const std::string& filepath, const std::string& filename, SceneData
             //Emmision
             mat.emmision_color = { materials[i].emission[0],materials[i].emission[1],materials[i].emission[2] };
             mat.emmision_color_tex = -1;
+            mat.is_light = mat.emmision_color.x > 0 || mat.emmision_color.y > 0 || mat.emmision_color.z > 0;
 
             Log::DebugLog(mat);
             scene_data.materials.push_back(mat);
