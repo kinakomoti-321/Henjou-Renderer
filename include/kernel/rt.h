@@ -140,6 +140,14 @@ __device__ struct Ray {
 	float tmax = 1e16f;
 };
 
+class Lambert {
+private:
+	float3 basecolor;
+public:
+	__device__ Lambert() : basecolor({ 1.0,1.0,1.0 }) {}
+	__device__ Lambert(float3 basecolor) : basecolor(basecolor) {}
+
+};
 
 __device__ float3 Pathtracing(float3 firstRayOrigin, float3 firstRayDirection, CMJstate& state) {
 	float3 LTE = { 0.0,0.0,0.0 };

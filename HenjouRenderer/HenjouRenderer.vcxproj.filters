@@ -4,64 +4,34 @@
     <ClCompile Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\external\tinygltf\tiny_gltf.cc">
-      <Filter>Header Files\external</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\renderer\animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\renderer\renderer.h">
-      <Filter>Header Files\Include\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\file_reader.h">
-      <Filter>Header Files\Include\Reader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\external\tinyobjloader\tiny_obj_loader.h">
-      <Filter>Header Files\external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\external\tinygltf\tiny_gltf.h">
-      <Filter>Header Files\external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\objloader.h">
-      <Filter>Header Files\Include\Reader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\texture_load.h">
-      <Filter>Header Files\Include\Reader</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\material.h">
-      <Filter>Header Files\Include\Renderer</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\renderer\scene.h">
-      <Filter>Header Files\Include\Renderer</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\renderer\texture.h">
-      <Filter>Header Files\Include\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\common\float_func.h">
-      <Filter>Header Files\Include\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\common\log.h">
-      <Filter>Header Files\Include\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\cu\cuda_buffer.h">
-      <Filter>Header Files\Include\cu</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\animation.h">
-      <Filter>Header Files\Include\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\common\timer.h">
-      <Filter>Header Files\Include\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\math.h">
-      <Filter>Header Files\Include\kernel</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\kernel\cmj.h">
-      <Filter>Header Files\Include\kernel</Filter>
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\math.h">
+      <Filter>CUDA Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\kernel\rt.h">
-      <Filter>Header Files\Include\kernel</Filter>
+      <Filter>CUDA Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -87,30 +57,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{22B1E3DF-EAF9-3567-A50F-FA1DBE29F013}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Include">
-      <UniqueIdentifier>{8c7c875d-2caf-46f7-8b4e-bf0b4b35bbac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Include\Renderer">
-      <UniqueIdentifier>{a17ba86a-ce75-4558-9227-e35b9a2d5fa3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Include\Reader">
-      <UniqueIdentifier>{68bc036d-08a2-4f50-aeb4-4cd7a73ed2b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\src">
-      <UniqueIdentifier>{d512ca99-a147-476f-864c-fcdabf426e02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\external">
-      <UniqueIdentifier>{c6059cfd-05e6-41b5-a40b-0e0b23622384}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Include\Common">
-      <UniqueIdentifier>{9962cb3f-7dd7-4213-8cc9-2ce81f2a8c1a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Include\cu">
-      <UniqueIdentifier>{7b604b2d-605f-4889-98c2-8ba64b664bf2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Include\kernel">
-      <UniqueIdentifier>{82e66c3e-2148-416e-b8b4-0a925ccd1194}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

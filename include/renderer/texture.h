@@ -1,4 +1,5 @@
 #pragma once
+#define STB_IMAGE_IMPLEMENTATION
 #include <fstream>
 #include <iostream>
 #include <string>
