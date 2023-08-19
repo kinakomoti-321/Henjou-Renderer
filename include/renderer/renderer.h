@@ -805,6 +805,8 @@ public:
 
 			sutil::Camera cam;
 			configureCamera(cam, render_option_.image_width, render_option_.image_height);
+			
+			updateIASMatrix(0.0);
 
 			Params params;
 			params.image = output_buffer.map();
@@ -818,6 +820,9 @@ public:
 			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
 			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
 			params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
+			params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
+			params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
+
 			params.RAYTYPE = RAYTYPE_;
 
 			params.cam_eye = cam.eye();
