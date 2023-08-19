@@ -12,6 +12,7 @@
 #include <sampleConfig.h>
 
 #include <sutil/CUDAOutputBuffer.h>
+#include <spdlog/spdlog.h>
 
 namespace cuh {
 	struct CUDevicePointer {
@@ -41,6 +42,21 @@ namespace cuh {
 			}
 			size_in_bytes = sizeof(T) * i_data.size();
 			CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&device_ptr), size_in_bytes));
+			CUDA_CHECK(cudaMemcpy(
+				reinterpret_cast<void*>(device_ptr),
+				i_data.data(),
+				size_in_bytes,
+				cudaMemcpyHostToDevice
+			));
+		}
+
+		template <typename T>
+		void updateCpyHostToDevice(const std::vector<T>& i_data) {
+			size_t size = sizeof(T) * i_data.size();
+			if (size != size_in_bytes) {
+				spdlog::error("updateCpyHostToDevice: size mismatch");
+				return;
+			}
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(device_ptr),
 				i_data.data(),

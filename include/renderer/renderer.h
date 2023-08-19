@@ -22,6 +22,8 @@
 #include <sutil/Camera.h>
 #include <sutil/Trackball.h>
 
+#include <external/glm/glm/glm.hpp>
+
 #include <HenjouRenderer/henjouRenderer.h>
 #include <loader/gltfloader.h>
 #include <file_reader.h>
@@ -29,6 +31,7 @@
 #include <renderer/material.h>
 #include <loader/objloader.h>
 #include <cu/cuda_buffer.h>
+#include <cu/matrix_4x3.h>
 #include <common/log.h>
 #include <common/timer.h>
 
@@ -121,14 +124,40 @@ private:
 	OptixTraversableHandle ias_handle_;
 	CUdeviceptr d_ias_buffer_;
 
+	std::vector<Matrix4x3> transform_matrices_;
+	cuh::CUDevicePointer transform_matrices_buffer_;
+	std::vector<Matrix4x3> inv_transform_matrices_;
+	cuh::CUDevicePointer inv_transform_matrices_buffer_;
+
 	std::vector<OptixTraversableHandle> gas_handle_;
 	std::vector<CUdeviceptr> d_gas_buffer_;
+
 
 	const unsigned int RAYTYPE_ = 2;
 
 private:
 
 	void cpySceneDataToDevice() {
+		//Matrix initialize
+		transform_matrices_.resize(scene_data_.instances.size());
+		for (int i = 0; i < transform_matrices_.size(); i++) {
+			Matrix4x3 mx;
+			mx.r0 = { 1.0,0.0,0.0,0.0 };
+			mx.r1 = { 0.0,1.0,0.0,0.0 };
+			mx.r2 = { 0.0,0.0,1.0,0.0 };
+			transform_matrices_[i] = mx;
+		}
+
+		inv_transform_matrices_.resize(scene_data_.instances.size());
+		for (int i = 0; i < inv_transform_matrices_.size(); i++) {
+			Matrix4x3 mx;
+			mx.r0 = { 1.0,0.0,0.0,0.0 };
+			mx.r1 = { 0.0,1.0,0.0,0.0 };
+			mx.r2 = { 0.0,0.0,1.0,0.0 };
+			inv_transform_matrices_[i] = mx;
+		}
+
+		//Copy to Device Memory
 		vertices_buffer_.cpyHostToDevice(scene_data_.vertices);
 		indices_buffer_.cpyHostToDevice(scene_data_.indices);
 		normals_buffer_.cpyHostToDevice(scene_data_.normals);
@@ -136,6 +165,9 @@ private:
 		material_ids_buffer_.cpyHostToDevice(scene_data_.material_ids);
 		colors_buffer_.cpyHostToDevice(scene_data_.colors);
 		prim_offset_buffer_.cpyHostToDevice(scene_data_.prim_offset);
+
+		transform_matrices_buffer_.cpyHostToDevice(transform_matrices_);
+		inv_transform_matrices_buffer_.cpyHostToDevice(inv_transform_matrices_);
 
 		spdlog::info("Scene Data");
 		spdlog::info("number of vertex : {:16d}", scene_data_.vertices.size());
@@ -146,7 +178,45 @@ private:
 		spdlog::info("number of material : {:16d}", scene_data_.materials.size());
 		spdlog::info("number of color : {:16d}", scene_data_.colors.size());
 		spdlog::info("number of prim offset : {:16d}", scene_data_.prim_offset.size());
+		spdlog::info("number of animation : {:16d}", scene_data_.animations.size());
+		spdlog::info("number of instance : {:16d}", scene_data_.instances.size());
+		spdlog::info("number of geometry : {:16d}", scene_data_.geometries.size());
+	}
 
+	void updateIASMatrix(float time) {
+
+		for (int i = 0; i < scene_data_.instances.size(); i++) {
+			auto& inst = scene_data_.instances[i];
+			unsigned int anim_id = inst.animation_id;
+			auto& anim = scene_data_.animations[anim_id];
+			Affine4x4 affine = anim.getAnimationAffine(time);
+
+			Matrix4x3 mx;
+			mx.r0 = { affine[0],affine[1],affine[2],affine[3] };
+			mx.r1 = { affine[4],affine[5],affine[6],affine[7] };
+			mx.r2 = { affine[8],affine[9],affine[10],affine[11] };
+
+			transform_matrices_[i] = mx;
+
+			glm::mat4x4 mat;
+			mat[0] = { affine[0],affine[1],affine[2],affine[3] };
+			mat[1] = { affine[4],affine[5],affine[6],affine[7] };
+			mat[2] = { affine[8],affine[9],affine[10],affine[11] };
+			mat[3] = { affine[12],affine[13],affine[14],affine[15] };
+
+			glm::mat4x4 inv_mat = glm::inverse(mat);
+			Matrix4x3 inv_mx;
+			inv_mx.r0 = { inv_mat[0][0],inv_mat[0][1],inv_mat[0][2],inv_mat[0][3] };
+			inv_mx.r1 = { inv_mat[1][0],inv_mat[1][1],inv_mat[1][2],inv_mat[1][3] };
+			inv_mx.r2 = { inv_mat[2][0],inv_mat[2][1],inv_mat[2][2],inv_mat[2][3] };
+
+			inv_transform_matrices_[i] = inv_mx;
+		}
+		
+		buildIAS();
+
+		transform_matrices_buffer_.updateCpyHostToDevice(transform_matrices_);
+		inv_transform_matrices_buffer_.updateCpyHostToDevice(inv_transform_matrices_);
 	}
 
 	void optixDeviceContextInitialize() {
@@ -165,6 +235,11 @@ private:
 	}
 
 	void optixTraversalBuild() {
+		buildGAS();
+		buildIAS();
+	}
+
+	void buildGAS() {
 		OptixAccelBuildOptions accel_options = {};
 		accel_options.buildFlags = OPTIX_BUILD_FLAG_NONE;
 		accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
@@ -179,22 +254,22 @@ private:
 
 		spdlog::info("GAS Build");
 		spdlog::info("GAS Number : {:5d}", scene_data_.geometries.size());
-		
-		std::cout << scene_data_.indices << std::endl;
-		std::cout << scene_data_.vertices << std::endl;
-		std::cout << scene_data_.material_ids << std::endl;
-		for (auto geo : scene_data_.geometries) {
-			std::cout << "offset" << geo.index_offset << std::endl;
-			std::cout << "count" << geo.index_count << std::endl;
-		}
 
-		for (auto inst : scene_data_.instances) {
-			std::cout << "inst" << inst.geometry_id << std::endl;
-		}
+		//std::cout << scene_data_.indices << std::endl;
+		//std::cout << scene_data_.vertices << std::endl;
+		//std::cout << scene_data_.material_ids << std::endl;
+		//for (auto geo : scene_data_.geometries) {
+		//	std::cout << "offset" << geo.index_offset << std::endl;
+		//	std::cout << "count" << geo.index_count << std::endl;
+		//}
 
-		std::cout << scene_data_.colors << std::endl;
-		std::cout << scene_data_.materials << std::endl;
-		std::cout << "prim_offset" << scene_data_.prim_offset << std::endl;
+		//for (auto inst : scene_data_.instances) {
+		//	std::cout << "inst" << inst.geometry_id << std::endl;
+		//}
+
+		//std::cout << scene_data_.colors << std::endl;
+		//std::cout << scene_data_.materials << std::endl;
+		//std::cout << "prim_offset" << scene_data_.prim_offset << std::endl;
 
 		Timer timer;
 		timer.Start();
@@ -257,7 +332,14 @@ private:
 		timer.Stop();
 
 		spdlog::info("GAS Build End : {:05f} ms ", timer.getTimeMS());
+	}
 
+	void buildIAS() {
+		if (!d_ias_buffer_) {
+			CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_ias_buffer_)));
+		}
+
+		Timer timer;
 		spdlog::info("IAS Build");
 		spdlog::info("IAS Number : {:5d}", scene_data_.instances.size());
 		std::vector<OptixInstance> optix_instances(scene_data_.instances.size());
@@ -270,7 +352,15 @@ private:
 			optix_instances[i].flags = OPTIX_INSTANCE_FLAG_NONE;
 			optix_instances[i].traversableHandle = gas_handle_[scene_data_.instances[i].geometry_id];
 
-			float transform[12] = { 1,0,0,0,0,1,0,0,0,0,1,0 };
+			Matrix4x3 transforms = transform_matrices_[i];
+
+			float transform[12] =
+			{
+				transforms.r0.x, transforms.r0.y , transforms.r0.z , transforms.r0.w,
+				transforms.r1.x, transforms.r1.y , transforms.r1.z , transforms.r1.w,
+				transforms.r2.x, transforms.r2.y , transforms.r2.z , transforms.r2.w
+			};
+
 			memcpy(optix_instances[i].transform, transform, sizeof(float) * 12);
 		}
 
@@ -430,7 +520,7 @@ private:
 
 
 		const uint32_t    max_trace_depth = 1;
-		OptixProgramGroup program_groups[] = { raygen_prog_group_, miss_prog_group_, hitgroup_prog_group_,hitgroup_prog_shadow_group_};
+		OptixProgramGroup program_groups[] = { raygen_prog_group_, miss_prog_group_, hitgroup_prog_group_,hitgroup_prog_shadow_group_ };
 
 		OptixPipelineLinkOptions pipeline_link_options = {};
 		pipeline_link_options.maxTraceDepth = max_trace_depth;
