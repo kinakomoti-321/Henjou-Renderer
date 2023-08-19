@@ -147,6 +147,9 @@ public:
 	__device__ Lambert() : basecolor({ 1.0,1.0,1.0 }) {}
 	__device__ Lambert(float3 basecolor) : basecolor(basecolor) {}
 
+	__device__ float3 eval(float3 wo, float3 wi) {
+		return basecolor / M_PIf;
+	}
 };
 
 __device__ float3 Pathtracing(float3 firstRayOrigin, float3 firstRayDirection, CMJstate& state) {
@@ -195,8 +198,10 @@ __device__ float3 Pathtracing(float3 firstRayOrigin, float3 firstRayDirection, C
 		float2 xi = cmj_2d(state);
 		float3 local_wi = cosineSampling(xi.x,xi.y, pdf);
 		float3 wi = local_to_world(local_wi, t, n, b);
+		
+		Lambert test = Lambert(prd.basecolor);
 
-		float3 bsdf = prd.basecolor / M_PIf;
+		float3 bsdf = test.eval(local_wo,local_wi);
 		throughput *= bsdf * fabs(dot(wi, n)) / pdf;
 
 		ray.origin = prd.position;
