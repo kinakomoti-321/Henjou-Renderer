@@ -23,6 +23,7 @@
 #include <sutil/Trackball.h>
 
 #include <HenjouRenderer/henjouRenderer.h>
+#include <loader/gltfloader.h>
 #include <file_reader.h>
 #include <renderer/scene.h>
 #include <renderer/material.h>
@@ -86,11 +87,6 @@ struct RenderOption {
 	RenderMode render_mode = Default;
 
 	std::string ptx_path;
-};
-
-
-struct AnimationData {
-
 };
 
 
@@ -183,6 +179,22 @@ private:
 
 		spdlog::info("GAS Build");
 		spdlog::info("GAS Number : {:5d}", scene_data_.geometries.size());
+		
+		std::cout << scene_data_.indices << std::endl;
+		std::cout << scene_data_.vertices << std::endl;
+		std::cout << scene_data_.material_ids << std::endl;
+		for (auto geo : scene_data_.geometries) {
+			std::cout << "offset" << geo.index_offset << std::endl;
+			std::cout << "count" << geo.index_count << std::endl;
+		}
+
+		for (auto inst : scene_data_.instances) {
+			std::cout << "inst" << inst.geometry_id << std::endl;
+		}
+
+		std::cout << scene_data_.colors << std::endl;
+		std::cout << scene_data_.materials << std::endl;
+		std::cout << "prim_offset" << scene_data_.prim_offset << std::endl;
 
 		Timer timer;
 		timer.Start();
@@ -562,15 +574,6 @@ private:
 			cudaMemcpyHostToDevice
 		));
 
-		//HitGroupSbtRecord hg_sbt;
-		//OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_group_, &hg_sbt));
-		//CUDA_CHECK(cudaMemcpy(
-		//	reinterpret_cast<void*>(hitgroup_record),
-		//	&hg_sbt,
-		//	hitgroup_record_size,
-		//	cudaMemcpyHostToDevice
-		//));
-
 		optix_sbt_.raygenRecord = raygen_record;
 		optix_sbt_.missRecordBase = miss_record;
 		optix_sbt_.missRecordStrideInBytes = sizeof(MissSbtRecord);
@@ -648,6 +651,7 @@ public:
 		render_option_ = render_option;
 	}
 
+
 	void setSceneData(const SceneData& scene_data) {
 		scene_data_ = scene_data;
 	}
@@ -666,6 +670,14 @@ public:
 		spdlog::info("Loading Time {:05f}", timer.getTimeMS());
 		spdlog::info("Finished loading obj file: {}{}", filepath, filename);
 		Log::EndLog("Load Obj file");
+	}
+
+	void loadGLTFfile(const std::string& filepath, const std::string& filename) {
+		if (!gltfloader(filepath, filename, scene_data_)) {
+			spdlog::warn("Faild loading gltf file : {}{}", filepath, filename);
+		}
+
+		spdlog::info("load gltf file {}{}", filepath, filename);
 	}
 
 	void build() {

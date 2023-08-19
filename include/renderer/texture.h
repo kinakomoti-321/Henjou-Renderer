@@ -1,5 +1,4 @@
 #pragma once
-#define STB_IMAGE_IMPLEMENTATION
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -7,7 +6,7 @@
 #include <sutil/sutil.h>
 #include <common/float_func.h>
 #include <common/log.h>
-#include <external/tinygltf/stb_image.h>
+
 
 class Texture {
 public:

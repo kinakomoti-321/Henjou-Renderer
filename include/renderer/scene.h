@@ -4,6 +4,7 @@
 #include <sutil/sutil.h>
 #include <renderer/material.h>
 #include <renderer/texture.h>
+#include <renderer/animation.h>
 
 struct GeometryData {
 	unsigned int index_offset;
@@ -27,6 +28,7 @@ struct SceneData {
 	std::vector<Texture> textures;
 	std::vector<unsigned int> light_prim_ids;
 
+	std::vector<Animation> animations;
 	std::vector<GeometryData> geometries;
 	std::vector<InstanceData> instances;
 	std::vector<unsigned int> prim_offset;
