@@ -1,8 +1,0 @@
-# CMake generation dependency list for this directory.
-C:/Users/PC/Documents/Optix/SDK/CMake/FindCUDA/run_nvcc.cmake
-C:/Users/PC/Documents/Optix/SDK/sutil/CMakeLists.txt
-C:/Users/PC/Documents/Optix/build/sutil/CMakeFiles/sutil.dir/__/cuda/sutil_generated_camera.cu.optixir.depend
-C:/Users/PC/Documents/Optix/build/sutil/CMakeFiles/sutil.dir/__/cuda/sutil_generated_geometry.cu.optixir.depend
-C:/Users/PC/Documents/Optix/build/sutil/CMakeFiles/sutil.dir/__/cuda/sutil_generated_shading.cu.optixir.depend
-C:/Users/PC/Documents/Optix/build/sutil/CMakeFiles/sutil.dir/__/cuda/sutil_generated_sphere.cu.optixir.depend
-C:/Users/PC/Documents/Optix/build/sutil/CMakeFiles/sutil.dir/__/cuda/sutil_generated_whitted.cu.optixir.depend

@@ -1,4 +1,0 @@
-# CMake generation dependency list for this directory.
-C:/Users/PC/Documents/Optix/SDK/CMake/FindCUDA/run_nvcc.cmake
-C:/Users/PC/Documents/Optix/SDK/HenjouRenderer/CMakeLists.txt
-C:/Users/PC/Documents/Optix/build/HenjouRenderer/CMakeFiles/henjouRenderer.dir/HenjouRenderer_generated_henjouRendererCU.cu.optixir.depend
