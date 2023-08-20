@@ -132,6 +132,9 @@ private:
 	std::vector<OptixTraversableHandle> gas_handle_;
 	std::vector<CUdeviceptr> d_gas_buffer_;
 
+	std::vector<cudaArray_t> carray_objects_;
+	std::vector<cudaTextureObject_t> ctexture_objects_;
+	cuh::CUDevicePointer d_texture_objects_;
 
 	const unsigned int RAYTYPE_ = 2;
 
@@ -672,7 +675,120 @@ private:
 		optix_sbt_.hitgroupRecordStrideInBytes = sizeof(HitGroupSbtRecord);
 		optix_sbt_.hitgroupRecordCount = RAYTYPE_ * MATCOUNT;
 	}
+	void textureBind() {
+		int numTextures = (int)scene_data_.textures.size();
 
+		carray_objects_.resize(numTextures);
+		ctexture_objects_.resize(numTextures);
+
+		for (int textureID = 0; textureID < numTextures; textureID++) {
+			auto& texture = scene_data_.textures[textureID];
+			Log::DebugLog("Texture ID ", textureID);
+			Log::DebugLog("Texture ", texture.tex_name);
+			Log::DebugLog("Texture Type", texture.tex_Type);
+			cudaResourceDesc res_desc = {};
+
+			cudaChannelFormatDesc channel_desc;
+			int32_t width = texture.width;
+			int32_t height = texture.height;
+			int32_t numComponents = 4;
+			int32_t pitch = width * numComponents * sizeof(uint8_t);
+			channel_desc = cudaCreateChannelDesc<uchar4>();
+
+			cudaArray_t& pixelArray = carray_objects_[textureID];
+			CUDA_CHECK(cudaMallocArray(&pixelArray,
+				&channel_desc,
+				width, height));
+
+			CUDA_CHECK(cudaMemcpy2DToArray(pixelArray,
+				/* offset */0, 0,
+				texture.pixel,
+				pitch, pitch, height,
+				cudaMemcpyHostToDevice));
+
+			res_desc.resType = cudaResourceTypeArray;
+			res_desc.res.array.array = pixelArray;
+
+			cudaTextureDesc tex_desc = {};
+			tex_desc.addressMode[0] = cudaAddressModeWrap;
+			tex_desc.addressMode[1] = cudaAddressModeWrap;
+			tex_desc.filterMode = cudaFilterModeLinear;
+			tex_desc.readMode = cudaReadModeNormalizedFloat;
+			tex_desc.normalizedCoords = 1;
+			tex_desc.maxAnisotropy = 1;
+			tex_desc.maxMipmapLevelClamp = 99;
+			tex_desc.minMipmapLevelClamp = 0;
+			tex_desc.mipmapFilterMode = cudaFilterModePoint;
+			tex_desc.borderColor[0] = 1.0f;
+			tex_desc.sRGB = 1; //png Convert sRGB
+
+			if (texture.tex_Type == "Normalmap") {
+				tex_desc.sRGB = 0;
+			}
+
+			// Create texture object
+			cudaTextureObject_t cuda_tex = 0;
+			CUDA_CHECK(cudaCreateTextureObject(&cuda_tex, &res_desc, &tex_desc, nullptr));
+			ctexture_objects_[textureID] = cuda_tex;
+		}
+
+		//const size_t texture_object_size = sizeof(cudaTextureObject_t) * textureObjects.size();
+		//CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&renderData.d_textures), texture_object_size));
+		//CUDA_CHECK(cudaMemcpy(
+		//	reinterpret_cast<void*>(renderData.d_textures),
+		//	textureObjects.data(),
+		//	texture_object_size,
+		//	cudaMemcpyHostToDevice
+		//));
+		d_texture_objects_.cpyHostToDevice(ctexture_objects_);
+		Log::DebugLog("Textures Loaded");
+
+		//Log::DebugLog("IBL texture Load");
+		//{
+		//	auto texture = sceneData.ibl_texture;
+		//	if (texture == nullptr) {
+		//		texture = std::make_shared<HDRTexture>(sceneData.backGround);
+		//	}
+		//	cudaResourceDesc res_desc = {};
+
+		//	cudaChannelFormatDesc channel_desc;
+		//	int32_t width = texture->width;
+		//	int32_t height = texture->height;
+		//	int32_t pitch = width * sizeof(float4);
+		//	channel_desc = cudaCreateChannelDesc<float4>();
+
+		//	CUDA_CHECK(cudaMallocArray(&ibl_texture_array,
+		//		&channel_desc,
+		//		width, height));
+
+		//	CUDA_CHECK(cudaMemcpy2DToArray(ibl_texture_array,
+		//		0, 0,
+		//		texture->pixel,
+		//		pitch, pitch, height,
+		//		cudaMemcpyHostToDevice));
+
+		//	res_desc.resType = cudaResourceTypeArray;
+		//	res_desc.res.array.array = ibl_texture_array;
+
+		//	cudaTextureDesc tex_desc = {};
+		//	tex_desc.addressMode[0] = cudaAddressModeWrap;
+		//	tex_desc.addressMode[1] = cudaAddressModeWrap;
+		//	tex_desc.filterMode = cudaFilterModeLinear;
+		//	tex_desc.readMode = cudaReadModeElementType;
+		//	tex_desc.normalizedCoords = 1;
+		//	tex_desc.maxAnisotropy = 1;
+		//	tex_desc.maxMipmapLevelClamp = 99;
+		//	tex_desc.minMipmapLevelClamp = 0;
+		//	tex_desc.mipmapFilterMode = cudaFilterModePoint;
+		//	tex_desc.borderColor[0] = 1.0f;
+		//	tex_desc.sRGB = 0;
+
+		//	CUDA_CHECK(cudaCreateTextureObject(&ibl_texture_object, &res_desc, &tex_desc, nullptr));
+
+		//	have_ibl = true;
+		//}
+
+	}
 public:
 	Renderer() {
 
@@ -808,17 +924,15 @@ public:
 		Params params;
 		CUdeviceptr d_param;
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
+		
+		Timer rendering_timer;
+		rendering_timer.Start();
+		spdlog::info("Animation Rendering Start");
 		for(int frame = 0; frame < render_option_.end_frame; frame++)
 		{
 			float time = frame / float(render_option_.fps);
 			std::cout << time << std::endl;
 			updateIASMatrix(time);
-
-			//for (auto& trans : transform_matrices_) {
-			//	std::cout << trans.r0 << std::endl;
-			//	std::cout << trans.r1 << std::endl;
-			//	std::cout << trans.r2 << std::endl;
-			//}
 
 			params.image = output_buffer.map();
 			params.image_width = render_option_.image_width;
@@ -844,9 +958,15 @@ public:
 				&params, sizeof(params),
 				cudaMemcpyHostToDevice
 			));
-
+			Timer timer;
+			timer.Start();
+			spdlog::info("Start render frame {}", frame);
 			OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
 			CUDA_SYNC_CHECK();
+			timer.Stop();
+			spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
+			rendering_timer.Stop();
+			spdlog::info("Total Elapsed time {} ms", rendering_timer.getTimeS());
 
 			output_buffer.unmap();
 
@@ -862,6 +982,9 @@ public:
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
+		
+		rendering_timer.Stop();
+		spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
 		Log::EndLog("Render");
 	}
 };

@@ -408,6 +408,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.cpp" />
+    <ClInclude Include="..\include\common\matrix.h" />
     <ClInclude Include="..\include\cu\cuda_buffer.h" />
     <ClInclude Include="..\include\renderer\animation.h" />
     <ClInclude Include="..\include\renderer\material.h" />

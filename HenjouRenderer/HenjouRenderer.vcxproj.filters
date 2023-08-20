@@ -27,6 +27,9 @@
     <ClInclude Include="..\include\renderer\texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\common\matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
