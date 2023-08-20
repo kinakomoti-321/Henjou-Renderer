@@ -34,7 +34,7 @@
 #include <cu/matrix_4x3.h>
 #include <common/log.h>
 #include <common/timer.h>
-
+#include <renderer/render_option.h>
 #include <spdlog/spdlog.h>
 
 template <typename T>
@@ -67,31 +67,6 @@ struct GASData {
 	OptixTraversableHandle handle;
 	CUdeviceptr            d_gas_output_buffer;
 };
-
-
-enum RenderMode {
-	Default, //
-	Denoise, //Denoised image output
-	Debug  //Position,BaseColor,Normal,Texcoord image output
-};
-
-struct RenderOption {
-	unsigned int image_width = 1024;
-	unsigned int image_height = 1024;
-
-	bool is_animation;
-	unsigned int fps;
-	unsigned int start_frame;
-	unsigned int end_frame;
-
-	float camera_fov;
-	unsigned int camera_animation_id;
-
-	RenderMode render_mode = Default;
-
-	std::string ptx_path;
-};
-
 
 class Renderer {
 private:

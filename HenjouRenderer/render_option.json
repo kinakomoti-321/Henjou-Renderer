@@ -1,0 +1,45 @@
+{
+    "Image": {
+        "image_width" : 1024,
+        "image_height" : 1024,
+        "image_name" : "output",
+        "image_directory" : "./"
+    },
+
+    "Render_mode" : "Default",
+
+    "GLTF_file" : {
+        "gltf_filepath" : "./Model/test_gltf/",
+        "gltf_filename" : "cornelbox.gltf"
+    },
+
+    "Camera" : {
+        "camera_position" : [0.0,0.0,0.0],
+        "camera_direction" : [1.0,0.0,0.0],
+        "camera_fov" : 45.0
+    },
+
+    "PTX_File":{
+        "ptxfile_path" : "C:\\Users\\PC\\Documents\\Optix\\build\\lib\\ptx\\Debug\\HenjouRenderer_generated_henjouRendererCU.cu.optixir"
+    },
+
+    "Animation" : {
+        "fps" : 24,
+        "start_frame" : 0,
+        "end_frame" : 240,
+        "time_limit" : 3.0
+    },
+
+    "Sky":{
+        "IBL_path" : "",
+        "IBL_use" : false,
+        "IBL_Intensity" : 1.0,
+        "scene_sky_default" : [1.0,1.0,1.0]
+    },
+
+    "Option" : {
+        "use_date" : false,
+        "save_renderOption" : false
+    }
+
+}
