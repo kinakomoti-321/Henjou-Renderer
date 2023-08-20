@@ -67,6 +67,6 @@ struct RenderOption {
 
 	float3 scene_sky_default = { 0.0,0.0,0.0 };
 
-	bool use_data = false;
+	bool use_date = false;
 	bool save_renderOption = false;
 };

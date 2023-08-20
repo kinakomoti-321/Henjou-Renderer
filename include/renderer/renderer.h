@@ -35,6 +35,7 @@
 #include <common/log.h>
 #include <common/timer.h>
 #include <renderer/render_option.h>
+#include <loader/render_json_loader.h>
 #include <spdlog/spdlog.h>
 
 template <typename T>
@@ -708,15 +709,6 @@ private:
 			CUDA_CHECK(cudaCreateTextureObject(&cuda_tex, &res_desc, &tex_desc, nullptr));
 			ctexture_objects_[textureID] = cuda_tex;
 		}
-
-		//const size_t texture_object_size = sizeof(cudaTextureObject_t) * textureObjects.size();
-		//CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&renderData.d_textures), texture_object_size));
-		//CUDA_CHECK(cudaMemcpy(
-		//	reinterpret_cast<void*>(renderData.d_textures),
-		//	textureObjects.data(),
-		//	texture_object_size,
-		//	cudaMemcpyHostToDevice
-		//));
 		d_texture_objects_.cpyHostToDevice(ctexture_objects_);
 		Log::DebugLog("Textures Loaded");
 
@@ -889,6 +881,18 @@ public:
 		Log::EndLog("SBT Build");
 	}
 
+	bool loadRenderOption(const std::string& filepath, const std::string& filename) {
+		spdlog::info("Load render option file : {}{}",filepath,filename);
+
+		if (!load_json(filepath, filename, render_option_)) {
+			spdlog::error("file load error : {}{}", filepath, filename);
+			return false;
+		}
+
+		spdlog::info("Success! Loading render option file : {}{}",filepath,filename);
+		return true;
+	}
+
 	void render() {
 		Log::StartLog("Render");
 		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
@@ -901,6 +905,11 @@ public:
 		Params params;
 		CUdeviceptr d_param;
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
+
+		std::string data = "";
+		if (render_option_.use_date) {
+			data = "data";
+		}
 		
 		Timer rendering_timer;
 		rendering_timer.Start();
@@ -954,8 +963,7 @@ public:
 			buffer.height = render_option_.image_height;
 			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
 			//sutil::displayBufferWindow("test", buffer);
-			
-			std::string imagename = "test_" + std::to_string(frame) + ".png";
+			std::string imagename = render_option_.image_name + "_" +  data  + "_" + std::to_string(frame) + ".png";
 			sutil::saveImage(imagename.c_str(), buffer, false);
 		}
 

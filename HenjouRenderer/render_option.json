@@ -31,9 +31,9 @@
     },
 
     "Sky":{
-        "IBL_path" : "",
-        "IBL_use" : false,
-        "IBL_Intensity" : 1.0,
+        "IBL_path" : "./",
+        "IBL_intensity" : 1.0,
+        "use_IBL" : false,
         "scene_sky_default" : [1.0,1.0,1.0]
     },
 

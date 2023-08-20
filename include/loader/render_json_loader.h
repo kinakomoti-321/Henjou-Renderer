@@ -8,6 +8,8 @@
 #include <sutil/sutil.h>
 
 #include <renderer/render_option.h>
+#include <spdlog/spdlog.h>
+
 //--------------------
 // json file format
 //-------------------- 
@@ -39,8 +41,8 @@
 //
 //Sky
 //-IBL_path
-//-IBL_use
-//-IBL_Intensity
+//-use_IBL
+//-IBL_intensity
 //-scene_sky_default
 //
 //Option
@@ -49,7 +51,7 @@
 
 bool load_json(const std::string& filepath, const std::string& filename, RenderOption& render_option) {
 	try {
-		std::ifstream ifs("./renderer_option.json");
+		std::ifstream ifs(filepath + filename);
 		std::string jsonstr;
 
 		if (ifs.fail()) {
@@ -63,55 +65,91 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 		}
 
 		auto& jsons = nlohmann::json::parse(jsonstr);
-		
+
+		spdlog::info("Image Settin...");
 		//Image
 		render_option.image_width = jsons["Image"]["image_width"];
 		render_option.image_height = jsons["Image"]["image_height"];
 		render_option.image_name = jsons["Image"]["image_name"];
 		render_option.image_directory = jsons["Image"]["image_directory"];
-		
+
+		spdlog::info("Image Width : {}", render_option.image_width);
+		spdlog::info("Image Height : {}", render_option.image_height);
+		spdlog::info("Image Name : {}", render_option.image_name);
+		spdlog::info("Image Directory : {}", render_option.image_directory);
+
+		spdlog::info("Render Mode Setting...");
+
 		//RenderMode
 		std::string mode = jsons["Render_mode"];
 		if (mode == "Default") {
 			render_option.render_mode = RenderMode::Default;
+			spdlog::info("Render Mode : Default");
 		}
 		else if (mode == "Denoise") {
 			render_option.render_mode = RenderMode::Denoise;
+			spdlog::info("Render Mode : Denoise");
 		}
 		else if (mode == "Debug") {
 			render_option.render_mode = RenderMode::Debug;
+			spdlog::info("Render Mode : Debug");
 		}
 		else {
 			render_option.render_mode = RenderMode::Default;
+			spdlog::info("Render Mode : Default");
 		}
-		
+
 		//Camera
+		spdlog::info("Camera Setting...");
 		auto camera_position = jsons["Camera"]["camera_position"];
-		render_option.camera_position = make_float3(camera_position[0],camera_position[1],camera_position[2]);
+		render_option.camera_position = make_float3(camera_position[0], camera_position[1], camera_position[2]);
 		auto camera_direction = jsons["Camera"]["camera_direction"];
-		render_option.camera_direction = make_float3(camera_direction[0],camera_direction[1],camera_direction[2]);
+		render_option.camera_direction = make_float3(camera_direction[0], camera_direction[1], camera_direction[2]);
 		render_option.camera_fov = jsons["Camera"]["camera_fov"];
 
+		spdlog::info("Camera Position : ({},{},{})", render_option.camera_position.x, render_option.camera_position.y, render_option.camera_position.z);
+		spdlog::info("Camera Direction : ({},{},{})", render_option.camera_direction.x, render_option.camera_direction.y, render_option.camera_direction.z);
+		spdlog::info("Camera FOV : {}", render_option.camera_fov);
+
 		//PTX_File
+		spdlog::info("PTX File Setting...");
 		render_option.ptxfile_path = jsons["PTX_File"]["ptxfile_path"];
+		spdlog::info("PTX File Path : {}", render_option.ptxfile_path);
 
 		//Animation
+		spdlog::info("Animation Setting...");
 		render_option.fps = jsons["Animation"]["fps"];
 		render_option.start_frame = jsons["Animation"]["start_frame"];
 		render_option.end_frame = jsons["Animation"]["end_frame"];
 		render_option.time_limit = jsons["Animation"]["time_limit"];
-		
+
+		spdlog::info("FPS : {}", render_option.fps);
+		spdlog::info("Start Frame : {}", render_option.start_frame);
+		spdlog::info("End Frame : {}", render_option.end_frame);
+		spdlog::info("Time Limit : {}", render_option.time_limit);
+
 		//Sky
+		spdlog::info("Sky Setting...");
 		render_option.IBL_path = jsons["Sky"]["IBL_path"];
+		spdlog::info("IBL path : {}",render_option.IBL_path);
+
 		render_option.IBL_intensity = jsons["Sky"]["IBL_intensity"];
+		spdlog::info("IBL intensity : {}", render_option.IBL_intensity);
+
 		render_option.use_IBL = jsons["Sky"]["use_IBL"];
+		spdlog::info("use_IBL : {}", render_option.use_IBL);
 
 		auto scene_sky_default = jsons["Sky"]["scene_sky_default"];
-		render_option.scene_sky_default = make_float3(scene_sky_default[0],scene_sky_default[1],scene_sky_default[2]);
+		render_option.scene_sky_default = make_float3(scene_sky_default[0], scene_sky_default[1], scene_sky_default[2]);
+
+		spdlog::info("scene_sky_default : ({},{},{})", render_option.scene_sky_default.x, render_option.scene_sky_default.y, render_option.scene_sky_default.z);
 
 		//Option
-		render_option.use_data = jsons["Option"]["use_data"];
+		render_option.use_date = jsons["Option"]["use_date"];
 		render_option.save_renderOption = jsons["Option"]["save_renderOption"];
+
+		spdlog::info("use_data : {}", render_option.use_date);
+		spdlog::info("save_renderOption : {}", render_option.save_renderOption);
 
 		if (render_option.save_renderOption) {
 			auto now = std::chrono::system_clock::now();
