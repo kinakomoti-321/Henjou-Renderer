@@ -212,7 +212,7 @@ private:
 
 			inv_transform_matrices_[i] = inv_mx;
 		}
-		
+
 		buildIAS();
 
 		transform_matrices_buffer_.updateCpyHostToDevice(transform_matrices_);
@@ -799,16 +799,27 @@ public:
 	void render() {
 		Log::StartLog("Render");
 		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		CUstream stream;
+		CUDA_CHECK(cudaStreamCreate(&stream));
+
+		sutil::Camera cam;
+		configureCamera(cam, render_option_.image_width, render_option_.image_height);
+
+		Params params;
+		CUdeviceptr d_param;
+		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
+		for(int frame = 0; frame < render_option_.end_frame; frame++)
 		{
-			CUstream stream;
-			CUDA_CHECK(cudaStreamCreate(&stream));
+			float time = frame / float(render_option_.fps);
+			std::cout << time << std::endl;
+			updateIASMatrix(time);
 
-			sutil::Camera cam;
-			configureCamera(cam, render_option_.image_width, render_option_.image_height);
-			
-			updateIASMatrix(0.0);
+			//for (auto& trans : transform_matrices_) {
+			//	std::cout << trans.r0 << std::endl;
+			//	std::cout << trans.r1 << std::endl;
+			//	std::cout << trans.r2 << std::endl;
+			//}
 
-			Params params;
 			params.image = output_buffer.map();
 			params.image_width = render_option_.image_width;
 			params.image_height = render_option_.image_height;
@@ -828,10 +839,6 @@ public:
 			params.cam_eye = cam.eye();
 			cam.UVWFrame(params.cam_u, params.cam_v, params.cam_w);
 
-
-
-			CUdeviceptr d_param;
-			CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(d_param),
 				&params, sizeof(params),
@@ -842,18 +849,19 @@ public:
 			CUDA_SYNC_CHECK();
 
 			output_buffer.unmap();
-			CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
-		}
 
-		{
 			sutil::ImageBuffer buffer;
 			buffer.data = output_buffer.getHostPointer();
 			buffer.width = render_option_.image_width;
 			buffer.height = render_option_.image_height;
 			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
-			sutil::displayBufferWindow("test", buffer);
+			//sutil::displayBufferWindow("test", buffer);
+			
+			std::string imagename = "test_" + std::to_string(frame) + ".png";
+			sutil::saveImage(imagename.c_str(), buffer, false);
 		}
 
+		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
 		Log::EndLog("Render");
 	}
 };
