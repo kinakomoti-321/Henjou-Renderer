@@ -1,0 +1,9 @@
+[submodule "external/tinyobjloader"]
+	path = external/tinyobjloader
+	url = git@github.com:tinyobjloader/tinyobjloader.git
+[submodule "external/tinygltf"]
+	path = external/tinygltf
+	url = git@github.com:syoyo/tinygltf.git
+[submodule "external/glm"]
+	path = external/glm
+	url = git@github.com:g-truc/glm.git

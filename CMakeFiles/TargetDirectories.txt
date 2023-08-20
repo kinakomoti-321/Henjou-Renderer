@@ -1,0 +1,8 @@
+C:/Users/PC/Documents/Optix/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/PC/Documents/Optix/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/PC/Documents/Optix/build/HenjouRenderer/CMakeFiles/HenjouRenderer.dir
+C:/Users/PC/Documents/Optix/build/sutil/CMakeFiles/sutil_7_sdk.dir
+C:/Users/PC/Documents/Optix/build/support/CMakeFiles/glad.dir
+C:/Users/PC/Documents/Optix/build/support/GLFW/CMakeFiles/ALL_BUILD.dir
+C:/Users/PC/Documents/Optix/build/support/GLFW/src/CMakeFiles/glfw.dir
+C:/Users/PC/Documents/Optix/build/support/imgui/CMakeFiles/imgui.dir
