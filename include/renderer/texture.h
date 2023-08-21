@@ -37,7 +37,7 @@ public:
 class HDRTexture {
 public:
 	std::string tex_name;
-	std::string tex_Type;
+	std::string tex_Type = "hdr";
 	unsigned int width, height;
 	float4* pixel;
 
@@ -47,7 +47,7 @@ public:
 		width = 1;
 		height = 1;
 		pixel = new float4[1];
-		pixel[0] = make_float4(1.0f,1.0f,1.0f, 0.0f);
+		pixel[0] = make_float4(1.0f, 1.0f, 1.0f, 0.0f);
 	}
 
 	HDRTexture(const float3& background) {
@@ -59,7 +59,7 @@ public:
 		pixel[0] = make_float4(background, 0.0f);
 	}
 
-	HDRTexture(const std::string& filename, const std::string& tex_Type) :tex_Type(tex_Type) {
+	HDRTexture(const std::string& filename, const float3& background) :tex_Type(tex_Type) {
 		tex_name = filename;
 		int resx, resy;
 		int comp;
@@ -82,6 +82,13 @@ public:
 			Log::DebugLog(filename + " LOADED");
 		}
 		else {
+			tex_name = "_background";
+			tex_Type = "hdr";
+			width = 1;
+			height = 1;
+			pixel = new float4[1];
+			pixel[0] = make_float4(background, 0.0f);
+
 			Log::DebugLog(filename + " NOT FOUND");
 		}
 	}

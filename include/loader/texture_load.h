@@ -17,3 +17,4 @@ int loadTexture(std::vector<Texture>& textures, std::map<std::string, int>& know
 
     return textureID;
 }
+

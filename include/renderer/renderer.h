@@ -724,10 +724,10 @@ private:
 	void setSky() {
 		Log::DebugLog("IBL texture Load");
 		if (render_option_.use_IBL) {
-			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.IBL_path,"HDRI");
+			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.IBL_path,render_option_.scene_sky_default);
 		}
 		else {
-			hdrtexture_ = std::make_shared<HDRTexture>(make_float3(1.0));
+			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.scene_sky_default);
 		}
 
 		Log::DebugLog("IBL texture Binding");
