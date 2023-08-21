@@ -3,7 +3,8 @@
         "image_width" : 1024,
         "image_height" : 1024,
         "image_name" : "output",
-        "image_directory" : "./"
+        "image_directory" : "./",
+        "max_spp" : 1000
     },
 
     "Render_mode" : "Default",
@@ -26,7 +27,7 @@
     "Animation" : {
         "fps" : 24,
         "start_frame" : 0,
-        "end_frame" : 240,
+        "end_frame" : 1,
         "time_limit" : 3.0
     },
 

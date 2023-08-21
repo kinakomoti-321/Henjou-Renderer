@@ -18,6 +18,7 @@
 //-image_height
 //-image_name
 //-image_directory
+//-max_spp
 //
 //Render_mode
 //
@@ -72,6 +73,7 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 		render_option.image_height = jsons["Image"]["image_height"];
 		render_option.image_name = jsons["Image"]["image_name"];
 		render_option.image_directory = jsons["Image"]["image_directory"];
+		render_option.max_spp = jsons["Image"]["max_spp"];
 
 		spdlog::info("Image Width : {}", render_option.image_width);
 		spdlog::info("Image Height : {}", render_option.image_height);

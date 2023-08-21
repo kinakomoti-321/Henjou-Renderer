@@ -10,6 +10,7 @@
 //image_height
 //image_name
 //image_directory
+//max_spp
 //
 //render_mode
 // 
@@ -45,6 +46,7 @@ struct RenderOption {
 	unsigned int image_height = 1024;
 	std::string image_name = "test";
 	std::string image_directory = "./";
+	unsigned int max_spp = 100;
 
 	bool is_animation = false;
 	unsigned int fps = 24;

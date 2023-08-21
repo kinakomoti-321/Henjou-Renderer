@@ -914,9 +914,10 @@ public:
 		Timer rendering_timer;
 		rendering_timer.Start();
 		spdlog::info("Animation Rendering Start");
-		for(int frame = 0; frame < render_option_.end_frame; frame++)
+		for(int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
 		{
 			float time = frame / float(render_option_.fps);
+			unsigned int spp = render_option_.max_spp;
 			std::cout << time << std::endl;
 			updateIASMatrix(time);
 
@@ -924,6 +925,7 @@ public:
 			params.image_width = render_option_.image_width;
 			params.image_height = render_option_.image_height;
 			params.traversal_handle = ias_handle_;
+			params.spp = spp;
 
 			params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
 			params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
