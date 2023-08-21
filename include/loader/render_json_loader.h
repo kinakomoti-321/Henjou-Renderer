@@ -30,6 +30,7 @@
 //-camera_position
 //-camera_direction
 //-camera_fov
+//-allow_camera_animation
 //
 //PTX_File
 //-ptxfile_path
@@ -67,7 +68,8 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 
 		auto& jsons = nlohmann::json::parse(jsonstr);
 
-		spdlog::info("Image Settin...");
+		spdlog::info("Image Setting...");
+
 		//Image
 		render_option.image_width = jsons["Image"]["image_width"];
 		render_option.image_height = jsons["Image"]["image_height"];
@@ -108,10 +110,12 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 		auto camera_direction = jsons["Camera"]["camera_direction"];
 		render_option.camera_direction = make_float3(camera_direction[0], camera_direction[1], camera_direction[2]);
 		render_option.camera_fov = jsons["Camera"]["camera_fov"];
+		render_option.allow_camera_animation = jsons["Camera"]["allow_camera_animation"];
 
 		spdlog::info("Camera Position : ({},{},{})", render_option.camera_position.x, render_option.camera_position.y, render_option.camera_position.z);
 		spdlog::info("Camera Direction : ({},{},{})", render_option.camera_direction.x, render_option.camera_direction.y, render_option.camera_direction.z);
 		spdlog::info("Camera FOV : {}", render_option.camera_fov);
+		spdlog::info("Camera Animation : {}", render_option.allow_camera_animation);
 
 		//PTX_File
 		spdlog::info("PTX File Setting...");
@@ -133,7 +137,7 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 		//Sky
 		spdlog::info("Sky Setting...");
 		render_option.IBL_path = jsons["Sky"]["IBL_path"];
-		spdlog::info("IBL path : {}",render_option.IBL_path);
+		spdlog::info("IBL path : {}", render_option.IBL_path);
 
 		render_option.IBL_intensity = jsons["Sky"]["IBL_intensity"];
 		spdlog::info("IBL intensity : {}", render_option.IBL_intensity);

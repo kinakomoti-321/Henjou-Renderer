@@ -1,10 +1,10 @@
 {
     "Image": {
         "image_width" : 1024,
-        "image_height" : 1024,
+        "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 1000
+        "max_spp" : 100
     },
 
     "Render_mode" : "Default",
@@ -15,8 +15,9 @@
     },
 
     "Camera" : {
-        "camera_position" : [0.0,0.0,0.0],
-        "camera_direction" : [1.0,0.0,0.0],
+        "allow_camera_animation" : false,
+        "camera_position" : [4.0,0.0,0.0],
+        "camera_direction" : [-1.0,0.0,0],
         "camera_fov" : 45.0
     },
 

@@ -17,6 +17,7 @@
 #include <renderer/texture.h>
 #include <common/matrix.h>
 #include <renderer/scene.h>
+#include <renderer/render_option.h>
 
 
 static std::string GetFilePathExtension(const std::string& FileName) {
@@ -1064,7 +1065,7 @@ struct v4dArray {
 };
 
 
-bool gltfloader(const std::string& filepath,const std::string& filename, SceneData& scenedata) {
+bool gltfloader(const std::string& filepath,const std::string& filename, SceneData& scenedata, RenderOption& render_option) {
 
 	// Store original JSON string for `extras` and `extensions`
 	bool store_original_json_for_extras_and_extensions = true;
@@ -1505,14 +1506,14 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 				scenedata.geometries.push_back(gasdata);
 				scenedata.instances.push_back(ias);
 			}
-			//else if (nodes.camera != -1) {
-			//	//Camera
-			//	scenedata.camera.origin = { 0,0,0 };
-			//	scenedata.camera.direciton = { 0,0,-1 };
-			//	cameraCheck = true;
-			//	scenedata.camera.cameraAnimationIndex = node_index;
-			//	scenedata.camera.f = 2.0 / std::tan(model.cameras[nodes.camera].perspective.yfov);
-			//}
+			else if (nodes.camera != -1 && render_option.allow_camera_animation) {
+				//Camera
+				render_option.camera_position = { 0,0,0 };
+				render_option.camera_direction = { 0,0,-1 };
+				cameraCheck = true;
+				render_option.camera_animation_id = node_index;
+				render_option.camera_fov = model.cameras[nodes.camera].perspective.yfov;
+			}
 			//else if (is_directional_light) {
 			//	scenedata.direcitonal_light_animation = node_index;
 			//}

@@ -48,16 +48,16 @@ struct RenderOption {
 	std::string image_directory = "./";
 	unsigned int max_spp = 100;
 
-	bool is_animation = false;
 	unsigned int fps = 24;
 	unsigned int start_frame = 0;
 	unsigned int end_frame = 1;
 	float time_limit = 1.0;
 
+	bool allow_camera_animation = false;
 	float camera_fov = 45;
 	float3 camera_position = { 0.0,0.0,0.0 };
 	float3 camera_direction = { 0.0,0.0,-1.0 };
-	unsigned int camera_animation_id;
+	int camera_animation_id = -1;
 
 	RenderMode render_mode = Default;
 

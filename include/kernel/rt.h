@@ -62,19 +62,19 @@ static __forceinline__ __device__ Payload* get_payload_ptr()
 	return reinterpret_cast<Payload*>(unpack_ptr(u0, u1));
 }
 
-static __forceinline__ __device__ void computeRay(uint3 idx, uint3 dim, float3& origin, float3& direction)
-{
-	const float3 U = params.cam_u;
-	const float3 V = params.cam_v;
-	const float3 W = params.cam_w;
-	const float2 d = 2.0f * make_float2(
-		static_cast<float>(idx.x) / static_cast<float>(dim.x),
-		static_cast<float>(idx.y) / static_cast<float>(dim.y)
-	) - 1.0f;
-
-	origin = params.cam_eye;
-	direction = normalize(d.x * U + d.y * V + W);
-}
+//static __forceinline__ __device__ void computeRay(uint3 idx, uint3 dim, float3& origin, float3& direction)
+//{
+//	const float3 U = params.cam_u;
+//	const float3 V = params.cam_v;
+//	const float3 W = params.cam_w;
+//	const float2 d = 2.0f * make_float2(
+//		static_cast<float>(idx.x) / static_cast<float>(dim.x),
+//		static_cast<float>(idx.y) / static_cast<float>(dim.y)
+//	) - 1.0f;
+//
+//	origin = params.cam_eye;
+//	direction = normalize(d.x * U + d.y * V + W);
+//}
 
 static __forceinline__ __device__ void TraceOcculution(
 	OptixTraversableHandle handle,

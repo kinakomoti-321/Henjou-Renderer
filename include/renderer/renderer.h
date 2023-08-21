@@ -848,7 +848,7 @@ public:
 	}
 
 	void loadGLTFfile(const std::string& filepath, const std::string& filename) {
-		if (!gltfloader(filepath, filename, scene_data_)) {
+		if (!gltfloader(filepath, filename, scene_data_,render_option_)) {
 			spdlog::warn("Faild loading gltf file : {}{}", filepath, filename);
 		}
 
@@ -882,14 +882,14 @@ public:
 	}
 
 	bool loadRenderOption(const std::string& filepath, const std::string& filename) {
-		spdlog::info("Load render option file : {}{}",filepath,filename);
+		spdlog::info("Load render option file : {}{}", filepath, filename);
 
 		if (!load_json(filepath, filename, render_option_)) {
 			spdlog::error("file load error : {}{}", filepath, filename);
 			return false;
 		}
 
-		spdlog::info("Success! Loading render option file : {}{}",filepath,filename);
+		spdlog::info("Success! Loading render option file : {}{}", filepath, filename);
 		return true;
 	}
 
@@ -910,22 +910,49 @@ public:
 		if (render_option_.use_date) {
 			data = "data";
 		}
-		
+
 		Timer rendering_timer;
 		rendering_timer.Start();
 		spdlog::info("Animation Rendering Start");
-		for(int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
+		for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
 		{
 			float time = frame / float(render_option_.fps);
 			unsigned int spp = render_option_.max_spp;
 			std::cout << time << std::endl;
+
 			updateIASMatrix(time);
+
+			float3 camera_pos;
+			float3 camera_dir;
+			{
+				if (render_option_.camera_animation_id != -1 && render_option_.allow_camera_animation) {
+					auto& anim = scene_data_.animations[render_option_.camera_animation_id];
+					Affine4x4 affine_pos = anim.getAnimationAffine(time);
+					Affine4x4 affine_dir = anim.getRotateAnimationAffine(time);
+
+					float4 trans_camera_pos = affine_pos * make_float4(render_option_.camera_position, 1.0);
+					float4 trans_camera_dir = affine_dir * make_float4(render_option_.camera_direction, 0.0);
+
+					camera_pos = make_float3(trans_camera_pos.x, trans_camera_pos.y, trans_camera_pos.z);
+					camera_dir = make_float3(trans_camera_dir.x, trans_camera_dir.y, trans_camera_dir.z);
+				}
+				else {
+					camera_pos = render_option_.camera_position;
+					camera_dir = render_option_.camera_direction;
+				}
+			}
 
 			params.image = output_buffer.map();
 			params.image_width = render_option_.image_width;
 			params.image_height = render_option_.image_height;
 			params.traversal_handle = ias_handle_;
+
 			params.spp = spp;
+			params.frame = frame;
+
+			params.camera_pos = camera_pos;
+			params.camera_dir = camera_dir;
+			params.camera_f = 2.0;
 
 			params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
 			params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
@@ -938,9 +965,6 @@ public:
 			params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
 
 			params.RAYTYPE = RAYTYPE_;
-
-			params.cam_eye = cam.eye();
-			cam.UVWFrame(params.cam_u, params.cam_v, params.cam_w);
 
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(d_param),
@@ -965,12 +989,12 @@ public:
 			buffer.height = render_option_.image_height;
 			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
 			//sutil::displayBufferWindow("test", buffer);
-			std::string imagename = render_option_.image_name + "_" +  data  + "_" + std::to_string(frame) + ".png";
+			std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
 			sutil::saveImage(imagename.c_str(), buffer, false);
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
-		
+
 		rendering_timer.Stop();
 		spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
 		Log::EndLog("Render");
