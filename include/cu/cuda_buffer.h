@@ -36,12 +36,42 @@ namespace cuh {
 		}
 
 		template <typename T>
+		void cpyHostToDevice(const T& i_data) {
+			if (device_ptr) {
+				memFree();
+			}
+			size_in_bytes = sizeof(T);
+			CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&device_ptr), size_in_bytes));
+			CUDA_CHECK(cudaMemcpy(
+				reinterpret_cast<void*>(device_ptr),
+				i_data.data(),
+				size_in_bytes,
+				cudaMemcpyHostToDevice
+			));
+		}
+
+		template <typename T>
 		void cpyHostToDevice(const std::vector<T>& i_data) {
 			if (device_ptr) {
 				memFree();
 			}
 			size_in_bytes = sizeof(T) * i_data.size();
 			CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&device_ptr), size_in_bytes));
+			CUDA_CHECK(cudaMemcpy(
+				reinterpret_cast<void*>(device_ptr),
+				i_data.data(),
+				size_in_bytes,
+				cudaMemcpyHostToDevice
+			));
+		}
+
+		template <typename T>
+		void updateCpyHostToDevice(const T& i_data) {
+			size_t size = sizeof(T);
+			if (size != size_in_bytes) {
+				spdlog::error("updateCpyHostToDevice: size mismatch");
+				return;
+			}
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(device_ptr),
 				i_data.data(),

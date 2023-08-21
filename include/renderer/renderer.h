@@ -112,6 +112,10 @@ private:
 	std::vector<cudaTextureObject_t> ctexture_objects_;
 	cuh::CUDevicePointer d_texture_objects_;
 
+	HDRTexture hdrtexture_;
+	cudaArray_t ibl_texture_array_;
+	cudaTextureObject_t ibl_texture_object_;
+
 	const unsigned int RAYTYPE_ = 2;
 
 private:
@@ -713,51 +717,58 @@ private:
 		d_texture_objects_.cpyHostToDevice(ctexture_objects_);
 		Log::DebugLog("Textures Loaded");
 
-		//Log::DebugLog("IBL texture Load");
-		//{
-		//	auto texture = sceneData.ibl_texture;
-		//	if (texture == nullptr) {
-		//		texture = std::make_shared<HDRTexture>(sceneData.backGround);
-		//	}
-		//	cudaResourceDesc res_desc = {};
 
-		//	cudaChannelFormatDesc channel_desc;
-		//	int32_t width = texture->width;
-		//	int32_t height = texture->height;
-		//	int32_t pitch = width * sizeof(float4);
-		//	channel_desc = cudaCreateChannelDesc<float4>();
+	}
 
-		//	CUDA_CHECK(cudaMallocArray(&ibl_texture_array,
-		//		&channel_desc,
-		//		width, height));
+	void setSky() {
+		Log::DebugLog("IBL texture Load");
+		if (render_option_.use_IBL) {
+			if (!hdrtexture_.loadHDRTexture(render_option_.IBL_path)) {
+				hdrtexture_ = HDRTexture(render_option_.scene_sky_default);
+			}
+		}
+		else {
+			hdrtexture_ = HDRTexture(render_option_.scene_sky_default);
+		}
 
-		//	CUDA_CHECK(cudaMemcpy2DToArray(ibl_texture_array,
-		//		0, 0,
-		//		texture->pixel,
-		//		pitch, pitch, height,
-		//		cudaMemcpyHostToDevice));
+		{
+			auto texture = hdrtexture_ ;
+			cudaResourceDesc res_desc = {};
 
-		//	res_desc.resType = cudaResourceTypeArray;
-		//	res_desc.res.array.array = ibl_texture_array;
+			cudaChannelFormatDesc channel_desc;
+			int32_t width = texture.width;
+			int32_t height = texture.height;
+			int32_t pitch = width * sizeof(float4);
+			channel_desc = cudaCreateChannelDesc<float4>();
 
-		//	cudaTextureDesc tex_desc = {};
-		//	tex_desc.addressMode[0] = cudaAddressModeWrap;
-		//	tex_desc.addressMode[1] = cudaAddressModeWrap;
-		//	tex_desc.filterMode = cudaFilterModeLinear;
-		//	tex_desc.readMode = cudaReadModeElementType;
-		//	tex_desc.normalizedCoords = 1;
-		//	tex_desc.maxAnisotropy = 1;
-		//	tex_desc.maxMipmapLevelClamp = 99;
-		//	tex_desc.minMipmapLevelClamp = 0;
-		//	tex_desc.mipmapFilterMode = cudaFilterModePoint;
-		//	tex_desc.borderColor[0] = 1.0f;
-		//	tex_desc.sRGB = 0;
+			CUDA_CHECK(cudaMallocArray(&ibl_texture_array_,
+				&channel_desc,
+				width, height));
 
-		//	CUDA_CHECK(cudaCreateTextureObject(&ibl_texture_object, &res_desc, &tex_desc, nullptr));
+			CUDA_CHECK(cudaMemcpy2DToArray(ibl_texture_array_,
+				0, 0,
+				texture.pixel,
+				pitch, pitch, height,
+				cudaMemcpyHostToDevice));
 
-		//	have_ibl = true;
-		//}
+			res_desc.resType = cudaResourceTypeArray;
+			res_desc.res.array.array = ibl_texture_array_;
 
+			cudaTextureDesc tex_desc = {};
+			tex_desc.addressMode[0] = cudaAddressModeWrap;
+			tex_desc.addressMode[1] = cudaAddressModeWrap;
+			tex_desc.filterMode = cudaFilterModeLinear;
+			tex_desc.readMode = cudaReadModeElementType;
+			tex_desc.normalizedCoords = 1;
+			tex_desc.maxAnisotropy = 1;
+			tex_desc.maxMipmapLevelClamp = 99;
+			tex_desc.minMipmapLevelClamp = 0;
+			tex_desc.mipmapFilterMode = cudaFilterModePoint;
+			tex_desc.borderColor[0] = 1.0f;
+			tex_desc.sRGB = 0;
+
+			CUDA_CHECK(cudaCreateTextureObject(&ibl_texture_object_, &res_desc, &tex_desc, nullptr));
+		}
 	}
 public:
 	Renderer() {
@@ -849,7 +860,7 @@ public:
 	}
 
 	void loadGLTFfile(const std::string& filepath, const std::string& filename) {
-		if (!gltfloader(filepath, filename, scene_data_,render_option_)) {
+		if (!gltfloader(filepath, filename, scene_data_, render_option_)) {
 			spdlog::warn("Faild loading gltf file : {}{}", filepath, filename);
 		}
 
@@ -924,7 +935,7 @@ public:
 			spdlog::info("IAS Update Start");
 			updateIASMatrix(time);
 			spdlog::info("IAS Update Finished");
-			
+
 			spdlog::info("Camera Update");
 			float3 camera_pos;
 			float3 camera_dir;
@@ -985,6 +996,7 @@ public:
 			params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
 			params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
 			params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
+			params.ibl_texture = ibl_texture_object_;
 
 			params.RAYTYPE = RAYTYPE_;
 

@@ -41,6 +41,15 @@ public:
 	unsigned int width, height;
 	float4* pixel;
 
+	HDRTexture() {
+		tex_name = "_background";
+		tex_Type = "hdr";
+		width = 1;
+		height = 1;
+		pixel = new float4[1];
+		pixel[0] = make_float4(1.0f,1.0f,1.0f, 0.0f);
+	}
+
 	HDRTexture(const float3& background) {
 		tex_name = "_background";
 		tex_Type = "hdr";
@@ -49,6 +58,7 @@ public:
 		pixel = new float4[1];
 		pixel[0] = make_float4(background, 0.0f);
 	}
+
 	HDRTexture(const std::string& filename, const std::string& tex_Type) :tex_Type(tex_Type) {
 		tex_name = filename;
 		int resx, resy;
@@ -73,6 +83,37 @@ public:
 		}
 		else {
 			Log::DebugLog(filename + " NOT FOUND");
+		}
+	}
+
+	bool loadHDRTexture(const std::string& filename) {
+		tex_name = filename;
+		int resx, resy;
+		int comp;
+		float* image = stbi_loadf(filename.c_str(), &resx, &resy, &comp, 0);
+
+		Log::DebugLog("comp", comp);
+
+		if (image) {
+			width = resx;
+			height = resy;
+
+			delete[] pixel;
+
+			pixel = new float4[height * width];
+
+			for (int j = 0; j < height; j++) {
+				for (int i = 0; i < width; i++) {
+					int idx = i * 3 + j * 3 * width;
+					pixel[i + width * j] = make_float4(image[idx], image[idx + 1], image[idx + 2], 0.0);
+				}
+			}
+			Log::DebugLog(filename + " LOADED");
+			return true;
+		}
+		else {
+			Log::DebugLog(filename + " NOT FOUND");
+			return false;
 		}
 	}
 
