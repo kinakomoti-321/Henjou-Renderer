@@ -331,6 +331,7 @@ private:
 			optix_instances[i].sbtOffset = 0;
 			optix_instances[i].visibilityMask = 255;
 			optix_instances[i].flags = OPTIX_INSTANCE_FLAG_NONE;
+
 			optix_instances[i].traversableHandle = gas_handle_[scene_data_.instances[i].geometry_id];
 
 			Matrix4x3 transforms = transform_matrices_[i];
@@ -920,11 +921,18 @@ public:
 			unsigned int spp = render_option_.max_spp;
 			std::cout << time << std::endl;
 
+			spdlog::info("IAS Update Start");
 			updateIASMatrix(time);
-
+			spdlog::info("IAS Update Finished");
+			
+			spdlog::info("Camera Update");
 			float3 camera_pos;
 			float3 camera_dir;
+			float3 camera_up;
+			float3 camera_right;
+			float camera_f;
 			{
+				camera_f = 2.0 / std::tan(render_option_.camera_fov);
 				if (render_option_.camera_animation_id != -1 && render_option_.allow_camera_animation) {
 					auto& anim = scene_data_.animations[render_option_.camera_animation_id];
 					Affine4x4 affine_pos = anim.getAnimationAffine(time);
@@ -932,15 +940,27 @@ public:
 
 					float4 trans_camera_pos = affine_pos * make_float4(render_option_.camera_position, 1.0);
 					float4 trans_camera_dir = affine_dir * make_float4(render_option_.camera_direction, 0.0);
+					float4 trans_camera_up = affine_dir * make_float4(make_float3(0, 1, 0), 0.0);
 
-					camera_pos = make_float3(trans_camera_pos.x, trans_camera_pos.y, trans_camera_pos.z);
-					camera_dir = make_float3(trans_camera_dir.x, trans_camera_dir.y, trans_camera_dir.z);
+					camera_pos = make_float3(trans_camera_pos);
+					camera_dir = make_float3(trans_camera_dir);
+					camera_up = make_float3(trans_camera_up);
+					camera_right = normalize(cross(camera_dir, camera_up));
+
+					std::cout << "Camera Dir" << camera_dir << std::endl;
+					std::cout << "Camera Up" << camera_up << std::endl;
+					std::cout << "Camera Right" << camera_right << std::endl;
 				}
 				else {
 					camera_pos = render_option_.camera_position;
 					camera_dir = render_option_.camera_direction;
+
+					camera_up = cross(camera_dir, make_float3(0, 1, 0));
+					camera_right = cross(camera_up, camera_dir);
 				}
 			}
+
+			spdlog::info("Camera Update Finished");
 
 			params.image = output_buffer.map();
 			params.image_width = render_option_.image_width;
@@ -952,7 +972,9 @@ public:
 
 			params.camera_pos = camera_pos;
 			params.camera_dir = camera_dir;
-			params.camera_f = 2.0;
+			params.camera_up = camera_up;
+			params.camera_right = camera_right;
+			params.camera_f = camera_f;
 
 			params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
 			params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);

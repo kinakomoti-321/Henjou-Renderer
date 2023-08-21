@@ -4,18 +4,18 @@
         "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 100
+        "max_spp" : 10
     },
 
     "Render_mode" : "Default",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "cornelbox.gltf"
+        "gltf_filename" : "camera_animation_test.gltf"
     },
 
     "Camera" : {
-        "allow_camera_animation" : false,
+        "allow_camera_animation" : true,
         "camera_position" : [4.0,0.0,0.0],
         "camera_direction" : [-1.0,0.0,0],
         "camera_fov" : 45.0
@@ -28,7 +28,7 @@
     "Animation" : {
         "fps" : 24,
         "start_frame" : 0,
-        "end_frame" : 1,
+        "end_frame" : 120,
         "time_limit" : 3.0
     },
 

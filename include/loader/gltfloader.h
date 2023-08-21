@@ -1502,7 +1502,7 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 				gasdata.index_count = scenedata.indices.size() - gasdata.index_offset;
 				InstanceData ias;
 				ias.animation_id = node_index;
-				ias.geometry_id = node_index;
+				ias.geometry_id = scenedata.geometries.size();
 				scenedata.geometries.push_back(gasdata);
 				scenedata.instances.push_back(ias);
 			}
@@ -1510,6 +1510,7 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 				//Camera
 				render_option.camera_position = { 0,0,0 };
 				render_option.camera_direction = { 0,0,-1 };
+
 				cameraCheck = true;
 				render_option.camera_animation_id = node_index;
 				render_option.camera_fov = model.cameras[nodes.camera].perspective.yfov;
@@ -1530,7 +1531,6 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 	{
 		//(node_index,deta)
 		for (auto& anim : model.animations) {
-			//Log::DebugLog(anim.name);
 			for (int i = 0; i < anim.channels.size(); i++) {
 
 				auto sampler = anim.samplers[i];
@@ -1584,6 +1584,12 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 	}
 	scenedata.animations = animation;
 
+	std::cout << "Camera Animation ID:" << render_option.camera_animation_id << std::endl;
+	std::cout << "Animation Size" << animation.size() << std::endl;
+	for (int i = 0; i < animation.size(); i++) {
+		std::cout << i << "index Animation" << std::endl;
+		std::cout << animation[i] << std::endl;
+	}
 	Log::EndLog("GLTF load finished");
 
 	return true;

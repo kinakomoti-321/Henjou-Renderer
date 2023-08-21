@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <cmath>
 
 #include <nlohmann/json.hpp>
 #include <sutil/sutil.h>
@@ -109,7 +110,7 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 		render_option.camera_position = make_float3(camera_position[0], camera_position[1], camera_position[2]);
 		auto camera_direction = jsons["Camera"]["camera_direction"];
 		render_option.camera_direction = make_float3(camera_direction[0], camera_direction[1], camera_direction[2]);
-		render_option.camera_fov = jsons["Camera"]["camera_fov"];
+		render_option.camera_fov = M_PI * jsons["Camera"]["camera_fov"] / 180.0f;
 		render_option.allow_camera_animation = jsons["Camera"]["allow_camera_animation"];
 
 		spdlog::info("Camera Position : ({},{},{})", render_option.camera_position.x, render_option.camera_position.y, render_option.camera_position.z);
