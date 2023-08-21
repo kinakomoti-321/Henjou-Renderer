@@ -998,6 +998,7 @@ public:
 			params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
 			params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
 			params.ibl_texture = ibl_texture_object_;
+			params.ibl_intensity = render_option_.IBL_intensity;
 
 			params.RAYTYPE = RAYTYPE_;
 

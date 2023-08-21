@@ -1584,12 +1584,12 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 	}
 	scenedata.animations = animation;
 
-	std::cout << "Camera Animation ID:" << render_option.camera_animation_id << std::endl;
-	std::cout << "Animation Size" << animation.size() << std::endl;
-	for (int i = 0; i < animation.size(); i++) {
-		std::cout << i << "index Animation" << std::endl;
-		std::cout << animation[i] << std::endl;
-	}
+	//std::cout << "Camera Animation ID:" << render_option.camera_animation_id << std::endl;
+	//std::cout << "Animation Size" << animation.size() << std::endl;
+	//for (int i = 0; i < animation.size(); i++) {
+	//	std::cout << i << "index Animation" << std::endl;
+	//	std::cout << animation[i] << std::endl;
+	//}
 	Log::EndLog("GLTF load finished");
 
 	return true;
