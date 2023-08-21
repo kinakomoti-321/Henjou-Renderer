@@ -9,42 +9,6 @@
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\loader\gltfloader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\objloader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\texture_load.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\loader\render_json_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\render_option.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\cu\cuda_buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\animation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
@@ -69,9 +33,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{22B1E3DF-EAF9-3567-A50F-FA1DBE29F013}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\NewFilter1">
-      <UniqueIdentifier>{f4365989-06bd-4b09-aff2-2b73633fbc82}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

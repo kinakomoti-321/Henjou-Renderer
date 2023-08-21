@@ -112,7 +112,7 @@ private:
 	std::vector<cudaTextureObject_t> ctexture_objects_;
 	cuh::CUDevicePointer d_texture_objects_;
 
-	HDRTexture hdrtexture_;
+	std::shared_ptr<HDRTexture> hdrtexture_ = nullptr;
 	cudaArray_t ibl_texture_array_;
 	cudaTextureObject_t ibl_texture_object_;
 
@@ -166,6 +166,7 @@ private:
 		spdlog::info("number of geometry : {:16d}", scene_data_.geometries.size());
 
 		textureBind();
+		setSky();
 	}
 
 	void updateIASMatrix(float time) {
@@ -723,21 +724,20 @@ private:
 	void setSky() {
 		Log::DebugLog("IBL texture Load");
 		if (render_option_.use_IBL) {
-			if (!hdrtexture_.loadHDRTexture(render_option_.IBL_path)) {
-				hdrtexture_ = HDRTexture(render_option_.scene_sky_default);
-			}
+			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.IBL_path,"HDRI");
 		}
 		else {
-			hdrtexture_ = HDRTexture(render_option_.scene_sky_default);
+			hdrtexture_ = std::make_shared<HDRTexture>(make_float3(1.0));
 		}
 
+		Log::DebugLog("IBL texture Binding");
 		{
-			auto texture = hdrtexture_ ;
+			auto texture = hdrtexture_;
 			cudaResourceDesc res_desc = {};
 
 			cudaChannelFormatDesc channel_desc;
-			int32_t width = texture.width;
-			int32_t height = texture.height;
+			int32_t width = texture->width;
+			int32_t height = texture->height;
 			int32_t pitch = width * sizeof(float4);
 			channel_desc = cudaCreateChannelDesc<float4>();
 
@@ -747,7 +747,7 @@ private:
 
 			CUDA_CHECK(cudaMemcpy2DToArray(ibl_texture_array_,
 				0, 0,
-				texture.pixel,
+				texture->pixel,
 				pitch, pitch, height,
 				cudaMemcpyHostToDevice));
 
@@ -768,6 +768,7 @@ private:
 			tex_desc.sRGB = 0;
 
 			CUDA_CHECK(cudaCreateTextureObject(&ibl_texture_object_, &res_desc, &tex_desc, nullptr));
+			spdlog::info("IBL Texture Binded");
 		}
 	}
 public:

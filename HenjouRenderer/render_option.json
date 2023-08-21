@@ -33,9 +33,9 @@
     },
 
     "Sky":{
-        "IBL_path" : "./",
+        "IBL_path" : "./HDRI/blocky_photo_studio_4k.hdr",
         "IBL_intensity" : 1.0,
-        "use_IBL" : false,
+        "use_IBL" : true,
         "scene_sky_default" : [1.0,1.0,1.0]
     },
 

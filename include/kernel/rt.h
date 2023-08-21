@@ -16,6 +16,9 @@ extern "C" {
 struct Payload
 {
 	bool is_hit = false;
+	
+	float3 ray_origin;
+	float3 ray_direction;
 
 	float3 position = { 0.0,0.0,0.0 };
 	float3 normal = { 0.0,0.0,0.0 };
