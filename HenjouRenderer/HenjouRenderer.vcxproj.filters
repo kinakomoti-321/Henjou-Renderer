@@ -42,6 +42,15 @@
     <ClInclude Include="..\include\loader\texture_load.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\kernel\cmj.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\math.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\rt.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">

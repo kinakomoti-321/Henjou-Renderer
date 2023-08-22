@@ -22,6 +22,23 @@ __device__ float3 hemisphereSampling(float u, float v, float& pdf) {
 	return make_float3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);
 }
 
+__device__ float3 shlickFresnel(const float3& F0, const float3& w, const float3& n) {
+	float term1 = 1.0 - dot(w, n);
+	return (1.0 - F0) * pow(term1, 5.0) + F0;
+}
+
+__device__ float shlickFresnel(const float no, const float ni, const float3& w, const float3& n) {
+	float F0 = (no - ni) / (no + ni);
+	F0 = F0 * F0;
+
+	float term1 = 1.0 - dot(w, n);
+	return F0 + (1.0 - F0) * pow(term1, 5.0);
+}
+
+static __forceinline__ __device__ float3 poler2xyzDirection(const float theta,const float phi) {
+	return make_float3(sin(theta) * cos(phi), cos(theta),  sin(theta) * sin(phi));
+}
+
 static __forceinline__ __device__ void orthonormal_basis(const float3& normal, float3& tangent, float3& binormal)
 {
 	float sign = copysignf(1.0f, normal.z);

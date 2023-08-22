@@ -408,6 +408,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.cpp" />
+    <ClInclude Include="..\include\kernel\cmj.h" />
+    <ClInclude Include="..\include\kernel\math.h" />
+    <ClInclude Include="..\include\kernel\rt.h" />
     <ClInclude Include="..\include\loader\gltfloader.h" />
     <ClInclude Include="..\include\loader\material.h" />
     <ClInclude Include="..\include\loader\objloader.h" />

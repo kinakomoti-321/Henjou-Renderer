@@ -51,7 +51,7 @@ typedef SbtRecord<HitGroupData>   HitGroupSbtRecord;
 
 void configureCamera(sutil::Camera& cam, const uint32_t width, const uint32_t height)
 {
-	cam.setEye({ 4.0f, 0.0f, 0.0f });
+	cam.setEye({ 1.0f, 0.0f, 0.0f });
 	cam.setLookat({ 0.0f, 0.0f, 0.0f });
 	cam.setUp({ 0.0f, 1.0f, 0.0 });
 	cam.setFovY(45.0f);

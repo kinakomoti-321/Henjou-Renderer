@@ -4,14 +4,14 @@
         "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 10
+        "max_spp" : 1000
     },
 
     "Render_mode" : "Default",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "camera_animation_test.gltf"
+        "gltf_filename" : "cornelbox.gltf"
     },
 
     "Camera" : {
@@ -28,13 +28,13 @@
     "Animation" : {
         "fps" : 24,
         "start_frame" : 0,
-        "end_frame" : 120,
+        "end_frame" : 1,
         "time_limit" : 3.0
     },
 
     "Sky":{
         "IBL_path" : "./HDRI/blocky_photo_studio_4k.hdr",
-        "IBL_intensity" : 1.0,
+        "IBL_intensity" : 0.0,
         "use_IBL" : true,
         "scene_sky_default" : [1.0,1.0,1.0]
     },
