@@ -155,7 +155,7 @@ public:
 		return basecolor / M_PIf;
 	}
 
-	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJstate& state) {
+	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float2 xi = cmj_2d(state);
 		wi = cosineSampling(xi.x, xi.y, pdf);
 		return basecolor / M_PIf;
@@ -213,7 +213,7 @@ public:
 		return ggxD * ggxG2 * ggxF / (4.0 * wo.y * wi.y);
 	}
 
-	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJstate& state) {
+	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float2 xi = cmj_2d(state);
 		const float3 wm = sampleD(xi);
 
@@ -281,7 +281,7 @@ public:
 
 	__device__ IdealGlass(const float3& rho, const float& ior) :rho(rho), ior(ior) {}
 
-	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJstate& state) {
+	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float ior_o, ior_i;
 		float3 n;
 
@@ -389,7 +389,7 @@ public:
 	__device__ float3 evaluateBSDF(float3 wo, float3 wi) {
 	}
 
-	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJstate& state) {
+	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float ior_o, ior_i;
 		float3 n;
 
@@ -443,6 +443,7 @@ public:
 
 
 };
+
 class BSDF {
 private:
 	float3 basecolor;
@@ -488,16 +489,12 @@ public:
 		return ggx.evaluateBSDF(wo, wi);
 	}
 
-	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJstate& state) {
+	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		if (metallic < 0.5) {
 			return lam.sampleBSDF(wo, wi, pdf, state);
 		}
 		else {
-			pdf = 1.0;
-			//return glass.sampleBSDF(wo, wi, pdf, state);
-			return idealglass.sampleBSDF(wo, wi, pdf, state);
-			//return glass.sampleBSDF(wo, wi, pdf, state);
-			//return ggx.sampleBSDF(wo, wi, pdf, state);
+			return idealglass.sampleBSDF(wo, wi, pdf, state);	
 		}
 	}
 
@@ -506,8 +503,18 @@ public:
 	}
 };
 
+static __forceinline__ __device__ float2 random(unsigned int& idx) {
+	return make_float2(rnd(idx), rnd(idx));
+}
 
-__device__ float3 Pathtracing(float3 firstRayOrigin, float3 firstRayDirection, CMJstate& state) {
+static __device__ float3 LambertBRDF(const float3& basecolor,const float3& wo,float3& wi,float& pdf,CMJState& state) {
+	//float2 xi = random(state.image_idx);
+	float2 xi = cmj_2d(state);
+	wi = cosineSampling(xi.x, xi.y, pdf);
+	return basecolor / PI;
+}
+
+__device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJState state) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
 	float russian_p = 1.0;
@@ -546,6 +553,7 @@ __device__ float3 Pathtracing(float3 firstRayOrigin, float3 firstRayDirection, C
 		}
 
 		BSDF surface_bsdf(prd);
+		Lambert test(prd.basecolor);
 
 		float3 t, b, n;
 		n = prd.normal;
@@ -553,9 +561,21 @@ __device__ float3 Pathtracing(float3 firstRayOrigin, float3 firstRayDirection, C
 		float pdf = 1.0;
 		float3 local_wo = world_to_local(-ray.direction, t, n, b);
 
-		float3 local_wi;
+		float3 local_wi = { 0.0,1.0,0.0 };
 
-		float3 bsdf = surface_bsdf.sampleBSDF(local_wo, local_wi, pdf, state);
+		float2 xi = cmj_2d(state);
+		float3 bsdf;
+
+		{
+			//bsdf = LambertBRDF(prd.basecolor, local_wo, local_wi, pdf, state);
+			bsdf = surface_bsdf.sampleBSDF(local_wo, local_wi, pdf, state);
+		}
+
+		//{
+		//	float2 xi = cmj_2d(state);
+		//	local_wi = cosineSampling(xi.x,xi.y,pdf);
+		//	bsdf = prd.basecolor / PI;
+		//}
 
 		float3 wi = local_to_world(local_wi, t, n, b);
 

@@ -180,9 +180,7 @@ SET(CUDA_NVCC_DEPEND
  "C:/Users/PC/Documents/Optix/build/include/common/constant.h"
  "C:/Users/PC/Documents/Optix/build/include/common/matrix.h"
  "C:/Users/PC/Documents/Optix/build/include/cu/matrix_4x3.h"
- "C:/Users/PC/Documents/Optix/build/include/kernel/cmj.h"
- "C:/Users/PC/Documents/Optix/build/include/kernel/math.h"
- "C:/Users/PC/Documents/Optix/build/include/kernel/rt.h"
+ "C:/Users/PC/Documents/Optix/build/include/kernel/payload.h"
  "C:/Users/PC/Documents/Optix/build/sampleConfig.h"
 )
 

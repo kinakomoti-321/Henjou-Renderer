@@ -182,7 +182,5 @@ henjouRendererCU.obj : C:/Users/PC/Documents/Optix/SDK/HenjouRenderer/henjouRend
     C:/Program\ Files/NVIDIA\ GPU\ Computing\ Toolkit/CUDA/v12.2/include/cuda.h \
     C:/Users/PC/Documents/Optix/SDK/cuda/helpers.h \
     C:/Users/PC/Documents/Optix/build/include/common/constant.h \
-    C:/Users/PC/Documents/Optix/SDK/cuda/random.h \
-    C:/Users/PC/Documents/Optix/build/include/kernel/cmj.h \
-    C:/Users/PC/Documents/Optix/build/include/kernel/rt.h \
-    C:/Users/PC/Documents/Optix/build/include/kernel/math.h
+    C:/Users/PC/Documents/Optix/build/include/kernel/payload.h \
+    C:/Users/PC/Documents/Optix/SDK/cuda/random.h

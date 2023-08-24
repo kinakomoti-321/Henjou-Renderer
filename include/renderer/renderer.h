@@ -216,7 +216,11 @@ private:
 
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
-
+		
+		size_t heap_size = 65536;
+		CUDA_CHECK(cudaDeviceSetLimit(cudaLimitStackSize, heap_size));
+		CUDA_CHECK(cudaDeviceGetLimit(&heap_size,cudaLimitMallocHeapSize));
+		spdlog::info("heap size : {:16d}", heap_size);
 		spdlog::info("Optix Device Context Initialize");
 	}
 
