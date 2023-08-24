@@ -12,6 +12,8 @@
 //image_directory
 //max_spp
 //
+//GLTF path
+//
 //render_mode
 // 
 //camera_position
@@ -47,6 +49,9 @@ struct RenderOption {
 	std::string image_name = "test";
 	std::string image_directory = "./";
 	unsigned int max_spp = 100;
+
+	std::string gltf_path = "./";
+	std::string gltf_name = "test.gltf";
 
 	unsigned int fps = 24;
 	unsigned int start_frame = 0;

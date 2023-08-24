@@ -52,13 +52,14 @@
 //-use_date
 //-save_renderOption
 
-bool load_json(const std::string& filepath, const std::string& filename, RenderOption& render_option) {
+
+bool load_json(const std::string& filepath, RenderOption& render_option) {
 	try {
-		std::ifstream ifs(filepath + filename);
+		std::ifstream ifs(filepath);
 		std::string jsonstr;
 
 		if (ifs.fail()) {
-			std::cout << "File " << filepath + filename << " not found" << std::endl;
+			std::cout << "File " << filepath << " not found" << std::endl;
 			return false;
 		}
 
@@ -84,6 +85,10 @@ bool load_json(const std::string& filepath, const std::string& filename, RenderO
 		spdlog::info("Image Directory : {}", render_option.image_directory);
 
 		spdlog::info("Render Mode Setting...");
+		
+		//GLTF
+		render_option.gltf_path = jsons["GLTF_file"]["gltf_filepath"];
+		render_option.gltf_name = jsons["GLTF_file"]["gltf_filename"];
 
 		//RenderMode
 		std::string mode = jsons["Render_mode"];
