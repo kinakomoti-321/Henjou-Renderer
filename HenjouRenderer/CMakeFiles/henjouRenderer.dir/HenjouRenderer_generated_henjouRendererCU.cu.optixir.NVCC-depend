@@ -184,5 +184,7 @@ henjouRendererCU.obj : C:/Users/PC/Documents/Optix/SDK/HenjouRenderer/henjouRend
     C:/Users/PC/Documents/Optix/build/include/common/constant.h \
     C:/Users/PC/Documents/Optix/SDK/cuda/random.h \
     C:/Users/PC/Documents/Optix/build/include/kernel/cmj.h \
+    C:/Users/PC/Documents/Optix/build/include/kernel/Payload.h \
     C:/Users/PC/Documents/Optix/build/include/kernel/rt.h \
-    C:/Users/PC/Documents/Optix/build/include/kernel/math.h
+    C:/Users/PC/Documents/Optix/build/include/kernel/math.h \
+    C:/Users/PC/Documents/Optix/build/include/kernel/BSDFs.h
