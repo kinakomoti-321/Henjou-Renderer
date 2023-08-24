@@ -4,14 +4,14 @@
         "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 100
+        "max_spp" : 1000
     },
 
     "Render_mode" : "Default",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "cornelbox.gltf"
+        "gltf_filename" : "WhiteFurnanceTest.gltf"
     },
 
     "Camera" : {
@@ -36,7 +36,7 @@
         "IBL_path" : "./HDRI/blocky_photo_studio_4k.hdr",
         "IBL_intensity" : 0.0,
         "use_IBL" : true,
-        "scene_sky_default" : [1.0,1.0,1.0]
+        "scene_sky_default" : [0.8,0.8,0.8]
     },
 
     "Option" : {

@@ -11,21 +11,6 @@
 #include <kernel/math.h>
 #include <kernel/BSDFs.h>
 
-static __forceinline__ __device__ void computeRay(uint3 idx, uint3 dim, float3& origin, float3& direction)
-{
-	const float3 V = params.camera_dir;
-	float3 U;
-	float3 W;
-	orthonormal_basis(V, U, W);
-	const float2 d = 2.0f * make_float2(
-		static_cast<float>(idx.x) / static_cast<float>(dim.x),
-		static_cast<float>(idx.y) / static_cast<float>(dim.y)
-	) - 1.0f;
-
-	origin = params.camera_pos;
-	direction = normalize(d.x * U + d.y * V + W);
-}
-
 static __forceinline__ __device__ void TraceOcculution(
 	OptixTraversableHandle handle,
 	float3 ray_origin,

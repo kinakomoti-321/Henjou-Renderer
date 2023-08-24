@@ -66,3 +66,24 @@ static __forceinline__ __device__ float3 local_to_world(const float3& v,
 		v.x * t.y + v.y * n.y + v.z * b.y,
 		v.x * t.z + v.y * n.z + v.z * b.z);
 }
+
+static __forceinline__ __device__ float norm2(const float3& v) {
+	return v.x * v.x + v.y * v.y + v.z * v.z;
+}
+
+static __forceinline__ __device__  bool refract(const float3& v, const float3& n, float ior1, float ior2,
+	float3& r) {
+	const float3 t_h = -ior1 / ior2 * (v - dot(v, n) * n);
+
+	// ‘S”½ŽË
+	if (norm2(t_h) > 1.0) return false;
+
+	const float3 t_p = -sqrtf(fmaxf(1.0f - norm2(t_h), 0.0f)) * n;
+	r = t_h + t_p;
+
+	return true;
+}
+
+static __forceinline__ __device__ float absdot(const float3& a,const float3& b) {
+	return fabsf(dot(a, b));
+}

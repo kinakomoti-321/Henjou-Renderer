@@ -2,6 +2,8 @@
 
 #include <HenjouRenderer/henjouRenderer.h>
 #include <cuda/helpers.h>
+#include <sutil/vec_math.h>
+
 #include <common/constant.h>
 #include <kernel/cmj.h>
 #include <kernel/math.h>
@@ -37,17 +39,39 @@ private:
 	__device__ float GGX_D(const float3& wm) {
 		float term1 = wm.x * wm.x / (alpha * alpha) + wm.z * wm.z / (alpha * alpha) + wm.y * wm.y;
 		float term2 = PI * alpha * alpha * term1 * term1;
-		return 1.0 / term2;
+		return 1.0f / term2;
+	}
+
+	__device__ float GGX_G1(const float3& w) {
+		return 1.0f / (1.0f + GGX_Lambda(w));
 	}
 
 	__device__ float GGX_G2_HeightCorrelated(const float3& wi, const float3& wo) {
-		return 1.0 / (1.0 + GGX_Lambda(wi) + GGX_Lambda(wo));
+		return 1.0f / (1.0f + GGX_Lambda(wi) + GGX_Lambda(wo));
 	}
 
 	__device__ float GGX_Lambda(const float3& w) {
 		float term1 = (alpha * alpha * w.x * w.x + alpha * alpha * w.z * w.z) / (w.y * w.y);
-		float term2 = sqrt(1.0 + term1);
-		return 0.5 * (term2 - 1.0);
+		return 0.5f * (-1.0f + sqrtf(term1));
+	}
+
+	//https://arxiv.org/pdf/2306.05044.pdf
+	__device__ float3 sampleVisibleNormal(float2 uv, float3 wo) {
+		float3 strech_wo = normalize(make_float3(wo.x * alpha, wo.y, wo.z * alpha));
+
+		float phi = 2.0f * PI * uv.x;
+		float z = fma((1.0f - uv.y), (1.0f + strech_wo.y), -strech_wo.y);
+		float sinTheta = sqrtf(clamp(1.0f - z * z, 0.0f, 1.0f));
+		float x = sinTheta * cos(phi);
+		float y = sinTheta * sin(phi);
+
+		float3 c = make_float3(x, z, y);
+
+		float3 h = c + strech_wo;
+
+		float3 wm = normalize(make_float3(h.x * alpha, h.y, h.z * alpha));
+
+		return wm;
 	}
 
 	__device__ float3 sampleD(float2 uv) {
@@ -78,12 +102,13 @@ public:
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float2 xi = cmj_2d(state);
-		const float3 wm = sampleD(xi);
+		const float3 wm = sampleVisibleNormal(xi,wo);
+		//const float3 wm = sampleD(xi);
 
 		wi = reflect(-wo, wm);
 
 		if (wi.y <= 0.0) {
-			pdf = 1.0;
+			pdf = 1.0f;
 			return { 0.0,0.0,0.0 };
 		}
 
@@ -91,7 +116,13 @@ public:
 		float ggxG2 = GGX_G2_HeightCorrelated(wi, wo);
 		float3 ggxF = shlickFresnel(F0, wi, wm);
 
-		pdf = ggxD * wm.y / (4.0 * dot(wo, wm));
+		float jacobian = 0.25f / absdot(wo, wm);
+		//Walter PDF
+		//pdf = ggxD * wm.y * jacobian;
+
+		//Visible Normal PDF
+		float ggxG1 = GGX_G1(wo);
+		pdf = ggxD * ggxG1 * absdot(wo,wm) * jacobian / fabsf(wo.y);
 
 		return ggxD * ggxG2 * ggxF / (4.0 * wo.y * wi.y);
 	}
@@ -102,47 +133,19 @@ public:
 
 };
 
-
-static __forceinline__ __device__ float norm2(const float3& v) {
-	return v.x * v.x + v.y * v.y + v.z * v.z;
-}
-
-static __forceinline__ __device__ float3 Reflect(const float3& v, const float3& n) {
-	return v - 2.0 * dot(v, n) * n;
-}
-
-static __forceinline__ __device__  bool refract(const float3& v, const float3& n, float ior1, float ior2,
-	float3& r) {
-	const float3 t_h = -ior1 / ior2 * (v - dot(v, n) * n);
-
-	// ‘S”½ŽË
-	if (norm2(t_h) > 1.0) return false;
-
-	const float3 t_p = -sqrtf(fmaxf(1.0f - norm2(t_h), 0.0f)) * n;
-	r = t_h + t_p;
-
-	return true;
-}
-
-static __forceinline__ __device__  float fresnel(const float3& w, const float3& n, float ior1, float ior2) {
-	float f0 = (ior1 - ior2) / (ior1 + ior2);
-	f0 = f0 * f0;
-	float delta = fmaxf(1.0f - dot(w, n), 0.0f);
-	return f0 + (1.0f - f0) * delta * delta * delta * delta * delta;
-}
-
 class IdealGlass {
 private:
-	float3 rho;
-	float ior;
+	float3 rho_;
+	float ior_;
 
 public:
 	__device__ IdealGlass() {
-		rho = make_float3(0);
-		ior = 1.0;
+		rho_ = make_float3(1);
+		ior_ = 1.0;
 	}
 
-	__device__ IdealGlass(const float3& rho, const float& ior) :rho(rho), ior(ior) {}
+	__device__ IdealGlass(const float3& rho, const float& ior) :rho_(rho), ior_(ior) {
+	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float ior_o, ior_i;
@@ -152,41 +155,41 @@ public:
 		float3 lwi = make_float3(0.0);
 
 		ior_o = 1.0;
-		ior_i = ior;
+		ior_i = ior_;
 
 		float sign = 1.0;
 
 		n = make_float3(0, 1, 0);
 
 		if (wo.y < 0.0) {
-			ior_o = ior;
+			ior_o = ior_;
 			ior_i = 1.0;
 			lwo.y = -lwo.y;
 			sign = -1.0;
 		}
 
-		const float fr = fresnel(lwo, n, ior_o, ior_i);
+		const float fr = shlickFresnel(ior_o, ior_i, lwo, n);
 
 		float3 evalbsdf;
 
 		float p = cmj_1d(state);
 
 		if (p < fr) {
-			lwi = Reflect(-lwo, n);
-			pdf = fr;
-			evalbsdf = fr * rho / fabsf(lwi.y);
+			lwi = reflect(-lwo, n);
+			pdf = 1;
+			evalbsdf = rho_ / fabsf(lwi.y);
 		}
 		else {
 			float3 t;
 			if (refract(lwo, n, ior_o, ior_i, t)) {
 				lwi = t;
 				pdf = 1;
-				evalbsdf = (1.0 - fr) * rho / fabsf(lwi.y);
+				evalbsdf = rho_ / fabsf(lwi.y);
 			}
 			else {
-				lwi = Reflect(-lwo, n);
+				lwi = reflect(-lwo, n);
 				pdf = 1;
-				evalbsdf = rho / fabsf(lwi.y);
+				evalbsdf = rho_ / fabsf(lwi.y);
 			}
 		}
 
@@ -206,50 +209,19 @@ public:
 
 };
 
-class DietricGGX {
+class MetaMaterialGlass {
 private:
-	float ior;
-	float alpha;
-
-	__device__ float GGX_D(const float3& wm) {
-		float term1 = wm.x * wm.x / (alpha * alpha) + wm.z * wm.z / (alpha * alpha) + wm.y * wm.y;
-		float term2 = PI * alpha * alpha * term1 * term1;
-		return 1.0 / term2;
-	}
-
-	__device__ float GGX_G1(const float3 w) {
-		return 1.0 / (1.0 + GGX_Lambda(w));
-	}
-
-	__device__ float GGX_G2_HeightCorrelated(const float3& wi, const float3& wo) {
-		return 1.0 / (1.0 + GGX_Lambda(wi) + GGX_Lambda(wo));
-	}
-
-	__device__ float GGX_Lambda(const float3& w) {
-		float term1 = (alpha * alpha * w.x * w.x + alpha * alpha * w.z * w.z) / (w.y * w.y);
-		float term2 = sqrt(1.0 + term1);
-		return 0.5 * (term2 - 1.0);
-	}
-
-
-	__device__ float3 sampleD(float2 uv) {
-		float theta = atan(alpha * sqrt(uv.x) / sqrt(1.0 - uv.x));
-		float phi = PI2 * uv.y;
-		return poler2xyzDirection(theta, phi);
-	}
+	float3 rho_;
+	float ior_;
 
 public:
-	__device__ DietricGGX() {
-		ior = 1.0;
-		alpha = 0.5;
+	__device__ MetaMaterialGlass() {
+		rho_ = make_float3(1);
+		ior_ = 1.0;
 	}
 
-	__device__ DietricGGX(float ior_i, float roughness_i) {
-		ior = ior_i;
-		alpha = (roughness_i * roughness_i);
-	}
+	__device__ MetaMaterialGlass(const float3& rho, const float& ior) :rho_(rho), ior_(ior) {
 
-	__device__ float3 evaluateBSDF(float3 wo, float3 wi) {
 	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
@@ -260,41 +232,41 @@ public:
 		float3 lwi = make_float3(0.0);
 
 		ior_o = 1.0;
-		ior_i = ior;
+		ior_i = ior_;
 
 		float sign = 1.0;
 
 		n = make_float3(0, 1, 0);
 
 		if (wo.y < 0.0) {
-			ior_o = ior;
+			ior_o = ior_;
 			ior_i = 1.0;
 			lwo.y = -lwo.y;
 			sign = -1.0;
 		}
 
-		const float fr = fresnel(lwo, n, ior_o, ior_i);
+		const float fr = shlickFresnel(ior_o, ior_i, lwo, n);
 
 		float3 evalbsdf;
 
 		float p = cmj_1d(state);
 
 		if (p < fr) {
-			lwi = Reflect(-lwo, n);
-			pdf = fr;
-			evalbsdf = make_float3(fr)/ fabsf(lwi.y);
+			lwi = reflect(-lwo, n);
+			pdf = 1;
+			evalbsdf = rho_ / fabsf(lwi.y);
 		}
 		else {
 			float3 t;
 			if (refract(lwo, n, ior_o, ior_i, t)) {
-				lwi = t;
+				lwi = reflect(-t, make_float3(0, -1, 0));
 				pdf = 1;
-				evalbsdf = (1.0 - make_float3(fr)) / fabsf(lwi.y);
+				evalbsdf = rho_ / fabsf(lwi.y);
 			}
 			else {
-				lwi = Reflect(-lwo, n);
+				lwi = reflect(-lwo, n);
 				pdf = 1;
-				evalbsdf = make_float3(fr) / fabsf(lwi.y);
+				evalbsdf = rho_ / fabsf(lwi.y);
 			}
 		}
 
@@ -304,9 +276,15 @@ public:
 		return evalbsdf;
 	}
 
+	__device__ float3 evalueateBSDF(const float3& wo, const float3& wi) {
+		return make_float3(0);
+	}
+
+	__device__ float pdfBSDF(const float3& wo, const float3& wi) {
+		return 0;
+	}
 
 };
-
 class BSDF {
 private:
 	float3 basecolor;
@@ -319,8 +297,8 @@ private:
 
 	Lambert lam;
 	GGX ggx;
-	DietricGGX glass;
-	IdealGlass idealglass;
+	MetaMaterialGlass idealglass;
+
 public:
 	__device__ BSDF() {
 		basecolor = { 1.0,1.0,1.0 };
@@ -342,10 +320,9 @@ public:
 		transmission = pyload.transmission;
 
 		lam = Lambert(basecolor);
-		ggx = GGX(basecolor, roughness);
+		ggx = GGX(basecolor, 1.0);
 		ior = 1.5;
-		glass = DietricGGX(ior, roughness);
-		idealglass = IdealGlass(basecolor, ior);
+		idealglass = MetaMaterialGlass(make_float3(1.0), ior);
 	}
 
 	__device__ float3 evaluateBSDF(float3 wo, float3 wi) {
@@ -353,12 +330,7 @@ public:
 	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
-		if (metallic < 0.5) {
-			return lam.sampleBSDF(wo, wi, pdf, state);
-		}
-		else {
-			return ggx.sampleBSDF(wo, wi, pdf, state);	
-		}
+		return ggx.sampleBSDF(wo, wi, pdf, state);
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {
