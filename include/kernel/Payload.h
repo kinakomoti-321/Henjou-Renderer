@@ -25,6 +25,7 @@ struct Payload
 	float3 basecolor = { 0.0,0.0,0.0 };
 	float metallic = 0.0;
 	float roughness = 0.0;
+	float subsurface = 0.0;
 	float sheen = 0.0;
 	float clearcoat = 0.0;
 	float ior = 1.0;

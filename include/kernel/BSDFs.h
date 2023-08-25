@@ -8,6 +8,7 @@
 #include <kernel/cmj.h>
 #include <kernel/math.h>
 #include <kernel/Payload.h>
+#include <kernel/disneyBRDF.h>
 
 class Lambert {
 private:
@@ -299,6 +300,8 @@ private:
 	GGX ggx;
 	MetaMaterialGlass idealglass;
 
+	DisneyBRDF disney;
+
 public:
 	__device__ BSDF() {
 		basecolor = { 1.0,1.0,1.0 };
@@ -312,25 +315,24 @@ public:
 
 	__device__ BSDF(const Payload& pyload) {
 		basecolor = pyload.basecolor;
-		roughness = pyload.roughness;
 		metallic = pyload.metallic;
-		sheen = pyload.sheen;
-		clearcoat = pyload.clearcoat;
-		ior = pyload.ior;
-		transmission = pyload.transmission;
-
 		lam = Lambert(basecolor);
-		ggx = GGX(basecolor, 1.0);
+		ggx = GGX(basecolor, pyload.roughness);
 		ior = 1.5;
 		idealglass = MetaMaterialGlass(make_float3(1.0), ior);
+		disney = DisneyBRDF(pyload);
 	}
 
 	__device__ float3 evaluateBSDF(float3 wo, float3 wi) {
-		return ggx.evaluateBSDF(wo, wi);
+		return disney.evaluateBSDF(wo, wi);
 	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
-		return ggx.sampleBSDF(wo, wi, pdf, state);
+		return disney.sampleBSDF(wo, wi, pdf, state);
+		//if(metallic < 0.5){
+		//	return lam.sampleBSDF(wo, wi, pdf, state);
+		//}
+		//return ggx.sampleBSDF(wo, wi, pdf, state);
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {

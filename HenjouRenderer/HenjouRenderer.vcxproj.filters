@@ -9,11 +9,8 @@
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\kernel\math.h">
+    <ClInclude Include="..\include\loader\gltfloader.h">
       <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\render_option.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

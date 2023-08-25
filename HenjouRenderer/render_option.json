@@ -1,7 +1,7 @@
 {
     "Image": {
-        "image_width" : 1024,
-        "image_height" : 700,
+        "image_width" : 2048,
+        "image_height" : 1400,
         "image_name" : "output",
         "image_directory" : "./",
         "max_spp" : 1000
@@ -11,7 +11,7 @@
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "WhiteFurnanceTest.gltf"
+        "gltf_filename" : "DisneyBRDF_test.gltf"
     },
 
     "Camera" : {
@@ -34,9 +34,9 @@
 
     "Sky":{
         "IBL_path" : "./HDRI/blocky_photo_studio_4k.hdr",
-        "IBL_intensity" : 0.0,
+        "IBL_intensity" : 1.0,
         "use_IBL" : true,
-        "scene_sky_default" : [0.8,0.8,0.8]
+        "scene_sky_default" : [0.5,0.5,0.5]
     },
 
     "Option" : {

@@ -87,3 +87,8 @@ static __forceinline__ __device__  bool refract(const float3& v, const float3& n
 static __forceinline__ __device__ float absdot(const float3& a,const float3& b) {
 	return fabsf(dot(a, b));
 }
+
+static __forceinline __device__ float lerp(const float& a, const float& b, const float& t) {
+	return (1 - t) * a + t * b;
+}
+
