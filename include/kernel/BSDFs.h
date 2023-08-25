@@ -329,10 +329,6 @@ public:
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		return disney.sampleBSDF(wo, wi, pdf, state);
-		//if(metallic < 0.5){
-		//	return lam.sampleBSDF(wo, wi, pdf, state);
-		//}
-		//return ggx.sampleBSDF(wo, wi, pdf, state);
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {

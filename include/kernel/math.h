@@ -67,6 +67,21 @@ static __forceinline__ __device__ float3 local_to_world(const float3& v,
 		v.x * t.z + v.y * n.z + v.z * b.z);
 }
 
+static __forceinline__ __device__ float3 transform_position(const Matrix4x3& mat, const float3& pos) {
+	float4 p = make_float4(pos, 1.0);
+	return make_float3(dot(mat.r0, p), dot(mat.r1, p), dot(mat.r2, p));
+}
+
+static __forceinline__ __device__ float3 transform_normal(const Matrix4x3& mat, const float3& nor) {
+	float4 n = make_float4(nor, 0.0);
+
+	//transposed matrix
+	float4 r0 = make_float4(mat.r0.x, mat.r1.x, mat.r2.x, 0.0);
+	float4 r1 = make_float4(mat.r0.y, mat.r1.y, mat.r2.y, 0.0);
+	float4 r2 = make_float4(mat.r0.z, mat.r1.z, mat.r2.z, 0.0);
+
+	return make_float3(dot(r0, n), dot(r1, n), dot(r2, n));
+}
 static __forceinline__ __device__ float norm2(const float3& v) {
 	return v.x * v.x + v.y * v.y + v.z * v.z;
 }

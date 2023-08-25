@@ -82,6 +82,8 @@ private:
 	cuh::CUDevicePointer material_ids_buffer_;
 	cuh::CUDevicePointer colors_buffer_;
 	cuh::CUDevicePointer prim_offset_buffer_;
+	cuh::CUDevicePointer light_prim_ids_buffer_;
+	cuh::CUDevicePointer light_prim_emission_buffer_;
 
 	OptixDeviceContext optix_context_ = nullptr;
 
@@ -148,6 +150,8 @@ private:
 		material_ids_buffer_.cpyHostToDevice(scene_data_.material_ids);
 		colors_buffer_.cpyHostToDevice(scene_data_.colors);
 		prim_offset_buffer_.cpyHostToDevice(scene_data_.prim_offset);
+		light_prim_ids_buffer_.cpyHostToDevice(scene_data_.light_prim_ids);
+		light_prim_emission_buffer_.cpyHostToDevice(scene_data_.light_prim_emission);
 
 		transform_matrices_buffer_.cpyHostToDevice(transform_matrices_);
 		inv_transform_matrices_buffer_.cpyHostToDevice(inv_transform_matrices_);
@@ -217,7 +221,7 @@ private:
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
 		
-		size_t heap_size = 65536;
+		size_t heap_size = 65536 * 2U;
 		CUDA_CHECK(cudaDeviceSetLimit(cudaLimitStackSize, heap_size));
 		CUDA_CHECK(cudaDeviceGetLimit(&heap_size,cudaLimitMallocHeapSize));
 		spdlog::info("heap size : {:16d}", heap_size);
@@ -244,22 +248,6 @@ private:
 
 		spdlog::info("GAS Build");
 		spdlog::info("GAS Number : {:5d}", scene_data_.geometries.size());
-
-		//std::cout << scene_data_.indices << std::endl;
-		//std::cout << scene_data_.vertices << std::endl;
-		//std::cout << scene_data_.material_ids << std::endl;
-		//for (auto geo : scene_data_.geometries) {
-		//	std::cout << "offset" << geo.index_offset << std::endl;
-		//	std::cout << "count" << geo.index_count << std::endl;
-		//}
-
-		//for (auto inst : scene_data_.instances) {
-		//	std::cout << "inst" << inst.geometry_id << std::endl;
-		//}
-
-		//std::cout << scene_data_.colors << std::endl;
-		//std::cout << scene_data_.materials << std::endl;
-		//std::cout << "prim_offset" << scene_data_.prim_offset << std::endl;
 
 		Timer timer;
 		timer.Start();
@@ -1145,9 +1133,15 @@ public:
 			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
 			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
 			params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
+			params.instance_count = scene_data_.instances.size();
 			params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
 			params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
 			params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
+
+			params.light_prim_ids = reinterpret_cast<unsigned int*>(light_prim_ids_buffer_.device_ptr);
+			params.light_prim_count = scene_data_.light_prim_ids.size();
+			params.light_prim_emission = reinterpret_cast<float3*>(light_prim_emission_buffer_.device_ptr);
+
 			params.ibl_texture = ibl_texture_object_;
 			params.ibl_intensity = render_option_.IBL_intensity;
 

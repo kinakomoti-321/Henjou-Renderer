@@ -1483,16 +1483,11 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 						//Log::DebugLog("material", primitives.material);
 						scenedata.material_ids.push_back(primitives.material);
 
-						//if (scenedata.materials[primitives.material].is_light) {
-						//	scenedata.light_faceID.push_back(prim_id);
-						//	float3 p1 = vert[1] - vert[0];
-						//	float3 p2 = vert[2] - vert[0];
-						//	float3 light_color = scenedata.materials[primitives.material].emmision_color;
-						//	float area = length(cross(p1, p2)) / 2;
-						//	float radiance = 0.2126 * light_color.x + 0.7152 * light_color.y + 0.0722 * light_color.z;
-						//	scenedata.light_weight.push_back(area * radiance);
-						//	scenedata.light_colorIndex.push_back(primitives.material);
-						//}
+						if (scenedata.materials[primitives.material].is_light) {
+							scenedata.light_prim_ids.push_back(prim_id);
+							float3 light_color = scenedata.materials[primitives.material].emmision_color;
+							scenedata.light_prim_emission.push_back(light_color);
+						}
 
 						prim_id++;
 					}

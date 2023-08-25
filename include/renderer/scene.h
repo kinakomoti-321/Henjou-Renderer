@@ -27,6 +27,7 @@ struct SceneData {
 	std::vector<Material> materials;
 	std::vector<Texture> textures;
 	std::vector<unsigned int> light_prim_ids;
+	std::vector<float3> light_prim_emission;
 
 	std::vector<Animation> animations;
 	std::vector<GeometryData> geometries;

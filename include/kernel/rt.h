@@ -10,6 +10,7 @@
 #include <kernel/cmj.h>
 #include <kernel/math.h>
 #include <kernel/BSDFs.h>
+#include <kernel/light_sample.h>
 
 static __forceinline__ __device__ void TraceOcculution(
 	OptixTraversableHandle handle,
@@ -142,3 +143,115 @@ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJ
 
 	return LTE;
 }
+
+
+__device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDirection, CMJState state) {
+	float3 LTE = { 0.0,0.0,0.0 };
+	float3 throughput = { 1.0,1.0,1.0 };
+	float russian_p = 1.0;
+	int MaxDepth = 10;
+
+	Ray ray;
+	ray.origin = firstRayOrigin;
+	ray.direction = firstRayDirection;
+
+	for (int depth = 0; depth < MaxDepth; depth++) {
+		russian_p = fmaxf(throughput.x, fmaxf(throughput.y, throughput.z));
+
+		if (russian_p < cmj_1d(state)) {
+			break;
+		}
+
+		throughput /= russian_p;
+
+		Payload prd;
+		RayTrace(
+			params.traversal_handle,
+			ray.origin,
+			ray.direction,
+			0.001f,                // Min intersection distance
+			1e16f,               // Max intersection distance
+			&prd
+		);
+
+		if (!prd.is_hit) {
+			if (depth == 0) {
+				LTE += throughput * prd.emission;
+			}
+			break;
+		}
+
+		if (prd.is_light) {
+			if (depth == 0) {
+				LTE += throughput * prd.emission;
+			}
+			break;
+		}
+
+		BSDF surface_bsdf(prd);
+
+		float3 t, b, n;
+		n = prd.normal;
+		orthonormal_basis(n, t, b);
+		
+		float3 local_wo = world_to_local(-ray.direction, t, n, b);
+
+		//NEE
+		{
+			Payload prd_shadow;
+			prd_shadow.is_hit = false;
+
+			float light_pdf;
+			float3 light_normal;
+			float3 light_position;
+			float3 light_emission;
+
+			light_position = light_sample(state,light_pdf,light_normal,light_emission);
+
+			float3 light_direction = light_position - prd.position;
+			float light_distance = length(light_direction);
+			light_direction = normalize(light_direction);
+
+			TraceOcculution(
+				params.traversal_handle,
+				prd.position,
+				light_direction,
+				0.001f,               
+				light_distance - 0.001f,        
+				&prd_shadow
+			);
+
+			if (!prd_shadow.is_hit) {
+				float cosine1 = absdot(n, light_direction);
+				float cosine2 = absdot(light_normal, -light_direction);
+
+				float3 local_wi = world_to_local(light_direction, t, n, b);
+				float3 bsdf = surface_bsdf.evaluateBSDF(local_wo,local_wi);
+
+				float G = cosine2 / (light_distance * light_distance);
+				LTE += throughput * (bsdf * G * cosine1 / light_pdf) * light_emission;
+			}
+		}
+
+		float pdf = 1.0;
+
+		float3 local_wi = { 0.0,1.0,0.0 };
+
+		float2 xi = cmj_2d(state);
+		float3 bsdf;
+
+		bsdf = surface_bsdf.sampleBSDF(local_wo, local_wi, pdf, state);
+
+
+		float3 wi = local_to_world(local_wi, t, n, b);
+
+		throughput *= bsdf * fabs(dot(wi, n)) / pdf;
+
+		ray.origin = prd.position;
+		ray.direction = wi;
+	}
+
+	return LTE;
+}
+
+

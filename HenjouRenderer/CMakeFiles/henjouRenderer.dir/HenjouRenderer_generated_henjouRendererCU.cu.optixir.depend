@@ -185,6 +185,7 @@ SET(CUDA_NVCC_DEPEND
  "C:/Users/PC/Documents/Optix/build/include/kernel/cmj.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/color.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/disneyBRDF.h"
+ "C:/Users/PC/Documents/Optix/build/include/kernel/light_sample.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/math.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/rt.h"
  "C:/Users/PC/Documents/Optix/build/sampleConfig.h"

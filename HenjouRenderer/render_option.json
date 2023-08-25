@@ -4,14 +4,14 @@
         "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 100
+        "max_spp" : 10
     },
 
     "Render_mode" : "Default",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "sponza.gltf"
+        "gltf_filename" : "cornelbox.gltf"
     },
 
     "Camera" : {
