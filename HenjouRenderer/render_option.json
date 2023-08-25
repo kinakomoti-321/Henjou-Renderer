@@ -1,17 +1,17 @@
 {
     "Image": {
-        "image_width" : 2048,
-        "image_height" : 1400,
+        "image_width" : 1024,
+        "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 1000
+        "max_spp" : 100
     },
 
     "Render_mode" : "Default",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "DisneyBRDF_test.gltf"
+        "gltf_filename" : "sponza.gltf"
     },
 
     "Camera" : {
@@ -28,7 +28,7 @@
     "Animation" : {
         "fps" : 24,
         "start_frame" : 0,
-        "end_frame" : 1,
+        "end_frame" : 120,
         "time_limit" : 3.0
     },
 
