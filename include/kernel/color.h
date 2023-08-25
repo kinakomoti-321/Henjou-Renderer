@@ -8,9 +8,6 @@
 //https://www.shadertoy.com/view/llXyWr
 
 static __forceinline__ __device__ float Tonemap_Uchimura(float x, float P, float a, float m, float l, float c, float b) {
-	// Uchimura 2017, "HDR theory and practice"
-	// Math: https://www.desmos.com/calculator/gslcdxvipg
-	// Source: https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp
 	float l0 = ((P - m) * l) / a;
 	float L0 = m - m / a;
 	float L1 = m + (1.0 - m) / a;

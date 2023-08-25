@@ -289,6 +289,20 @@ public:
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {
+		float diffuseWeight = 1.0f * (1.0f - m_metallic);
+		float specularWeight = 1.0;
+		float clearcoatWeight = m_clearcoat;
 
+		float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
+		float dw = diffuseWeight / sumWeight;
+		float sw = specularWeight / sumWeight;
+		float cw = clearcoatWeight / sumWeight;
+
+		float3 wm = normalize(wo + wi);
+		float pdf_diffuse = getPDFDiffuse(wi);
+		float pdf_specular = getPDFSpecular(wm, wo);
+		float kpdf_clearcoat = getPDFClearcoat(wm, wo);
+
+		return dw * pdf_diffuse + sw * pdf_specular + cw * kpdf_clearcoat;
 	}
 };

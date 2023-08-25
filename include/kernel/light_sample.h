@@ -67,3 +67,19 @@ __forceinline__ __device__ float3 light_sample(CMJState& state, float& pdf, floa
 	return light_position;
 }
 
+__forceinline__ __device__ float getLightPDF(const unsigned int& primID,const unsigned int& instID) {
+	const unsigned int idx0 = params.indices[primID * 3 + 0];
+	const unsigned int idx1 = params.indices[primID * 3 + 1];
+	const unsigned int idx2 = params.indices[primID * 3 + 2];
+
+	const Matrix4x3 transform = params.transforms[instID];
+
+	const float3 v0 = transform_position(transform, params.vertices[idx0]);
+	const float3 v1 = transform_position(transform, params.vertices[idx1]);
+	const float3 v2 = transform_position(transform, params.vertices[idx2]);
+
+	float light_area = length(cross(v1 - v0, v2 - v0)) * 0.5f;
+	
+	return 1.0f / (light_area * params.light_prim_count);
+}
+

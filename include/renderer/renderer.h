@@ -227,7 +227,7 @@ private:
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
 		
-		size_t heap_size = 65536 * 2U;
+		size_t heap_size = 65536;
 		CUDA_CHECK(cudaDeviceSetLimit(cudaLimitStackSize, heap_size));
 		CUDA_CHECK(cudaDeviceGetLimit(&heap_size,cudaLimitMallocHeapSize));
 		spdlog::info("heap size : {:16d}", heap_size);
@@ -246,7 +246,7 @@ private:
 
 		gas_handle_.resize(scene_data_.geometries.size());
 		d_gas_buffer_.resize(scene_data_.geometries.size());
-		//const uint32_t triangle_input_flags[2] = { OPTIX_GEOMETRY_FLAG_NONE,OPTIX_GEOMETRY_FLAG_NONE };
+
 		std::vector<uint32_t> triangle_input_flags(scene_data_.materials.size());
 		for (int i = 0; i < scene_data_.materials.size(); i++) {
 			triangle_input_flags[i] = OPTIX_GEOMETRY_FLAG_NONE;
@@ -1065,11 +1065,6 @@ public:
 	//	sutil::Camera cam;
 	//	configureCamera(cam, render_option_.image_width, render_option_.image_height);
 
-	//	Params params;
-	//	CUdeviceptr d_param;
-	//	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
-
-	//	std::string data = "";
 	//	if (render_option_.use_date) {
 	//		data = "data";
 	//	}
