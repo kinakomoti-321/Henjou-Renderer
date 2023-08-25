@@ -366,3 +366,4 @@ FodyWeavers.xsd
 *.gltf
 *.png
 *.hdr
+HenjouRenderer/Model/
