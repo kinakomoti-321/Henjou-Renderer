@@ -87,15 +87,16 @@ private:
 
 
 	__device__ float3 sampleClearcoat(const float2& uv, const float3& wo, float& pdf) {
-		float theta = sqrtf(fmaxf((1.0f - powf(m_clearcoatAlpha * m_clearcoatAlpha, 1.0f - uv.x)) / (1.0f - m_clearcoatAlpha * m_clearcoatAlpha), 0.0f));
+		float cosineTheta = sqrtf(fmaxf((1.0f - powf(m_clearcoatAlpha * m_clearcoatAlpha, 1.0f - uv.x)) / (1.0f - m_clearcoatAlpha * m_clearcoatAlpha), 0.0f));
+		float sinTheta = sqrtf(fmaxf(1.0f - cosineTheta * cosineTheta, 0.0f));
 		float phi = PI2 * uv.y;
-		float3 wm = make_float3(cos(phi) * sin(theta), cos(theta), sin(phi) * sinf(theta));
+		float3 wm = make_float3(cos(phi) * sinTheta, cosineTheta, sin(phi) * sinTheta);
 		pdf = getPDFClearcoat(wm, wo);
 		return wm;
 	}
 
 	__device__ float getPDFClearcoat(const float3& wm, const float3& wo) {
-		return GGX_D(wm) * fabsf(wm.y) / (4.0f * fabsf(dot(wm, wo)));
+		return clearcoat_D(wm, m_clearcoatAlpha) * fabsf(wm.y) / (4.0f * fabsf(dot(wm, wo)));
 	}
 
 	__device__ float f_tSchlick(float wn, float F90) {
@@ -124,9 +125,13 @@ private:
 	}
 
 	__device__ float clearcoat_D(const float3& wm, const float alpha) {
-		const float cosine_wm = fabsf(wm.y);
-		const float term1 = PI * logf(alpha * alpha) * (1.0f + (cosine_wm * cosine_wm) * (alpha * alpha - 1.0f));
-		return (alpha * alpha - 1.0) / term1;
+		//const float cosine_wm = fabsf(wm.y);
+		//const float term1 = PI * logf(alpha * alpha) * (1.0f + (cosine_wm * cosine_wm) * (alpha * alpha - 1.0f));
+		//return (alpha * alpha - 1.0) / term1;
+
+		float alpha2 = alpha * alpha;
+		float t = 1.0f + (alpha2 - 1.0) * wm.y * wm.y;
+		return (alpha2 - 1.0f) / (PI * logf(alpha2) * t);
 	}
 
 	//Clearcoat
@@ -213,12 +218,14 @@ public:
 			f_clearcoat = 0.25f * clearcoat(wo, wi, m_clearcoatAlpha);
 		}
 
+		//return make_float3(m_clearcoat);
 		return (lerp(f_diffuse, f_subsurface, m_subsurface) + f_sheen) * (1.0f - m_metallic) + f_specular + f_clearcoat * m_clearcoat;
+		//return f_clearcoat * m_clearcoat;
 	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		//TODO nantokashitai
-		float diffuseWeight = 2.0f * (1.0f - m_metallic);
+		float diffuseWeight = 1.0f * (1.0f - m_metallic);
 		float specularWeight = 1.0;
 		float clearcoatWeight = m_clearcoat;
 
@@ -242,7 +249,7 @@ public:
 			pdf_clearcoat = getPDFClearcoat(wm, wo);
 
 		}
-		else if(select_p < dw + sw){
+		else if (select_p < dw + sw) {
 			//Specular
 			float3 wm = sampleSpecular(xi, wo, pdf_specular);
 			wi = reflect(-wo, wm);
@@ -265,6 +272,11 @@ public:
 		//float3 wm = sampleSpecular(xi, wo, pdf_specular);
 		//wi = reflect(-wo, wm);
 		//pdf = pdf_specular;
+		//float3 wm = sampleClearcoat(xi, wo, pdf_clearcoat);
+		//wi = reflect(-wo, wm);
+		//pdf = pdf_clearcoat;
+
+
 
 		if (wi.y < 0.0) {
 			pdf = 1.0f;

@@ -1199,7 +1199,7 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 				tinygltf::Value::Object::const_iterator it(o.begin());
 				tinygltf::Value::Object::const_iterator itEnd(o.end());
 				for (; it != itEnd; it++) {
-					if (it->first == "clearcoatRoughnessFactor") {
+					if (it->first == "clearcoatFactor") {
 						mat.clearcoat = it->second.Get<double>();
 					}
 				}
