@@ -7,15 +7,20 @@
 #include <common/float_func.h>
 #include <common/log.h>
 
+enum TexType {
+	sRGB,
+	NonColor,
+	HDR
+};
 
 class Texture {
 public:
 	std::string tex_name;
-	std::string tex_Type;
+	TexType tex_Type;
 	unsigned int width, height;
 	uint32_t* pixel;
 
-	Texture(const std::string& filename, const std::string& tex_Type) :tex_Type(tex_Type) {
+	Texture(const std::string& filename, const TexType& tex_Type) :tex_Type(tex_Type) {
 		tex_name = filename;
 		int resx, resy;
 		int comp;
@@ -37,13 +42,13 @@ public:
 class HDRTexture {
 public:
 	std::string tex_name;
-	std::string tex_Type = "hdr";
+	TexType tex_Type;
 	unsigned int width, height;
 	float4* pixel;
 
 	HDRTexture() {
 		tex_name = "_background";
-		tex_Type = "hdr";
+		tex_Type = TexType::HDR;
 		width = 1;
 		height = 1;
 		pixel = new float4[1];
@@ -52,7 +57,7 @@ public:
 
 	HDRTexture(const float3& background) {
 		tex_name = "_background";
-		tex_Type = "hdr";
+		tex_Type = TexType::HDR;
 		width = 1;
 		height = 1;
 		pixel = new float4[1];
@@ -83,7 +88,7 @@ public:
 		}
 		else {
 			tex_name = "_background";
-			tex_Type = "hdr";
+			tex_Type = TexType::HDR;
 			width = 1;
 			height = 1;
 			pixel = new float4[1];

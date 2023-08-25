@@ -710,7 +710,7 @@ private:
 			tex_desc.borderColor[0] = 1.0f;
 			tex_desc.sRGB = 1; //png Convert sRGB
 
-			if (texture.tex_Type == "Normalmap") {
+			if (texture.tex_Type == TexType::NonColor) {
 				tex_desc.sRGB = 0;
 			}
 

@@ -1134,7 +1134,7 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 		if (mat_pram.baseColorTexture.index != -1) {
 			std::string diffuse_texture_name = model.images[model.textures[mat_pram.baseColorTexture.index].source].uri;
 			Log::DebugLog(diffuse_texture_name);
-			mat.base_color_tex = loadTexture(scenedata.textures, known_tex, diffuse_texture_name, filepath, "Diffuse");
+			mat.base_color_tex = loadTexture(scenedata.textures, known_tex, diffuse_texture_name, filepath, TexType::sRGB);
 		}
 		else {
 			mat.base_color_tex = -1;
@@ -1146,7 +1146,7 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 			Log::DebugLog("roughness texture");
 			std::string roughness_texture_name = model.images[model.textures[mat_pram.metallicRoughnessTexture.index].source].uri;
 			Log::DebugLog(roughness_texture_name);
-			mat.roughness_tex = loadTexture(scenedata.textures, known_tex, roughness_texture_name, filepath, "Roughness");
+			mat.roughness_tex = loadTexture(scenedata.textures, known_tex, roughness_texture_name, filepath, TexType::NonColor);
 		}
 		else {
 			mat.roughness_tex = -1;
@@ -1169,7 +1169,7 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 		if (material.normalTexture.index != -1) {
 			std::string normal_texture_name = model.images[model.textures[material.normalTexture.index].source].uri;
 			Log::DebugLog(normal_texture_name);
-			mat.normal_tex = loadTexture(scenedata.textures, known_tex, normal_texture_name, filepath, "Normalmap");
+			mat.normal_tex = loadTexture(scenedata.textures, known_tex, normal_texture_name, filepath, TexType::NonColor);
 		}
 		else {
 			mat.normal_tex = -1;

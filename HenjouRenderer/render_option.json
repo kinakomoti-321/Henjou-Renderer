@@ -28,7 +28,7 @@
     "Animation" : {
         "fps" : 24,
         "start_frame" : 0,
-        "end_frame" : 120,
+        "end_frame" : 1,
         "time_limit" : 3.0
     },
 
