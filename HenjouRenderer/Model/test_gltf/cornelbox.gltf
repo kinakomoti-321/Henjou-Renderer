@@ -49,13 +49,13 @@
 				0
 			],
 			"scale":[
-				-0.620543360710144,
-				-0.037068016827106476,
-				-0.61072838306427
+				-0.2372220754623413,
+				-0.014170405454933643,
+				-0.23346999287605286
 			],
 			"translation":[
 				0,
-				0.9473599195480347,
+				0.9898384809494019,
 				0
 			]
 		},
@@ -78,7 +78,7 @@
 			"name":"Cube.002",
 			"rotation":[
 				0,
-				-0.3126004636287689,
+				-0.31260043382644653,
 				0,
 				0.9498847126960754
 			],
@@ -96,10 +96,10 @@
 	],
 	"cameras":[
 		{
-			"name":"Camera",
+			"name":"Camera.001",
 			"perspective":{
-				"aspectRatio":1.4628571428571429,
-				"yfov":0.48259751365026604,
+				"aspectRatio":1.7777777777777777,
+				"yfov":0.4825975000858307,
 				"zfar":100,
 				"znear":0.10000000149011612
 			},
@@ -127,14 +127,14 @@
 			"name":"CameraAction.002",
 			"samplers":[
 				{
-					"input":23,
-					"interpolation":"STEP",
-					"output":24
-				},
-				{
-					"input":23,
+					"input":24,
 					"interpolation":"STEP",
 					"output":25
+				},
+				{
+					"input":24,
+					"interpolation":"STEP",
+					"output":26
 				}
 			]
 		}
@@ -191,17 +191,11 @@
 			],
 			"extensions":{
 				"KHR_materials_emissive_strength":{
-					"emissiveStrength":2
+					"emissiveStrength":10
 				}
 			},
 			"name":"Material.004",
 			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.800000011920929,
-					0.800000011920929,
-					0.800000011920929,
-					1
-				],
 				"metallicFactor":0,
 				"roughnessFactor":0.5
 			}
@@ -303,7 +297,7 @@
 						"NORMAL":21,
 						"TEXCOORD_0":22
 					},
-					"indices":15,
+					"indices":23,
 					"material":5
 				}
 			]
@@ -415,7 +409,7 @@
 		{
 			"bufferView":12,
 			"componentType":5126,
-			"count":24,
+			"count":4,
 			"max":[
 				1,
 				1,
@@ -423,7 +417,7 @@
 			],
 			"min":[
 				-1,
-				-1,
+				1,
 				-1
 			],
 			"type":"VEC3"
@@ -431,19 +425,19 @@
 		{
 			"bufferView":13,
 			"componentType":5126,
-			"count":24,
+			"count":4,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":14,
 			"componentType":5126,
-			"count":24,
+			"count":4,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":15,
 			"componentType":5123,
-			"count":36,
+			"count":6,
 			"type":"SCALAR"
 		},
 		{
@@ -510,6 +504,12 @@
 		},
 		{
 			"bufferView":23,
+			"componentType":5123,
+			"count":36,
+			"type":"SCALAR"
+		},
+		{
+			"bufferView":24,
 			"componentType":5126,
 			"count":2,
 			"max":[
@@ -521,13 +521,13 @@
 			"type":"SCALAR"
 		},
 		{
-			"bufferView":24,
+			"bufferView":25,
 			"componentType":5126,
 			"count":2,
 			"type":"VEC3"
 		},
 		{
-			"bufferView":25,
+			"bufferView":26,
 			"componentType":5126,
 			"count":2,
 			"type":"VEC4"
@@ -608,89 +608,95 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":288,
+			"byteLength":48,
 			"byteOffset":700,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":288,
-			"byteOffset":988,
+			"byteLength":48,
+			"byteOffset":748,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":192,
-			"byteOffset":1276,
+			"byteLength":32,
+			"byteOffset":796,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":72,
-			"byteOffset":1468,
+			"byteLength":12,
+			"byteOffset":828,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":6708,
-			"byteOffset":1540,
+			"byteOffset":840,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":6708,
-			"byteOffset":8248,
+			"byteOffset":7548,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":4472,
-			"byteOffset":14956,
+			"byteOffset":14256,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":5760,
-			"byteOffset":19428,
+			"byteOffset":18728,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":288,
-			"byteOffset":25188,
+			"byteOffset":24488,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":288,
-			"byteOffset":25476,
+			"byteOffset":24776,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":192,
-			"byteOffset":25764,
+			"byteOffset":25064,
 			"target":34962
 		},
 		{
 			"buffer":0,
+			"byteLength":72,
+			"byteOffset":25256,
+			"target":34963
+		},
+		{
+			"buffer":0,
 			"byteLength":8,
-			"byteOffset":25956
+			"byteOffset":25328
 		},
 		{
 			"buffer":0,
 			"byteLength":24,
-			"byteOffset":25964
+			"byteOffset":25336
 		},
 		{
 			"buffer":0,
 			"byteLength":32,
-			"byteOffset":25988
+			"byteOffset":25360
 		}
 	],
 	"buffers":[
 		{
-			"byteLength":26020,
+			"byteLength":25392,
 			"uri":"cornelbox.bin"
 		}
 	]

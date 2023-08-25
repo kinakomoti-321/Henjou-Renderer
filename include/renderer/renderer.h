@@ -150,8 +150,12 @@ private:
 		material_ids_buffer_.cpyHostToDevice(scene_data_.material_ids);
 		colors_buffer_.cpyHostToDevice(scene_data_.colors);
 		prim_offset_buffer_.cpyHostToDevice(scene_data_.prim_offset);
+
 		light_prim_ids_buffer_.cpyHostToDevice(scene_data_.light_prim_ids);
 		light_prim_emission_buffer_.cpyHostToDevice(scene_data_.light_prim_emission);
+
+		std::cout << "Emission" << scene_data_.light_prim_emission << std::endl;
+		std::cout << "Light Primitive" << scene_data_.light_prim_ids << std::endl;
 
 		transform_matrices_buffer_.cpyHostToDevice(transform_matrices_);
 		inv_transform_matrices_buffer_.cpyHostToDevice(inv_transform_matrices_);
@@ -168,6 +172,8 @@ private:
 		spdlog::info("number of animation : {:16d}", scene_data_.animations.size());
 		spdlog::info("number of instance : {:16d}", scene_data_.instances.size());
 		spdlog::info("number of geometry : {:16d}", scene_data_.geometries.size());
+		spdlog::info("number of light ID : {:16d}", scene_data_.light_prim_ids.size());
+		spdlog::info("number of light Emission : {:16d}", scene_data_.light_prim_emission.size());
 
 		textureBind();
 		setSky();
@@ -1010,140 +1016,10 @@ public:
 			params.ibl_texture = ibl_texture_object_;
 			params.ibl_intensity = render_option_.IBL_intensity;
 
-			params.RAYTYPE = RAYTYPE_;
-
-			CUDA_CHECK(cudaMemcpy(
-				reinterpret_cast<void*>(d_param),
-				&params, sizeof(params),
-				cudaMemcpyHostToDevice
-			));
-			Timer timer;
-			timer.Start();
-			spdlog::info("Start render frame {}", frame);
-			OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
-			CUDA_SYNC_CHECK();
-			timer.Stop();
-			spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
-			rendering_timer.Stop();
-			spdlog::info("Total Elapsed time {} ms", rendering_timer.getTimeS());
-
-			output_buffer.unmap();
-
-			sutil::ImageBuffer buffer;
-			buffer.data = output_buffer.getHostPointer();
-			buffer.width = render_option_.image_width;
-			buffer.height = render_option_.image_height;
-			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
-			//sutil::displayBufferWindow("test", buffer);
-			std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
-			sutil::saveImage(imagename.c_str(), buffer, false);
-		}
-
-		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
-
-		rendering_timer.Stop();
-		spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
-		Log::EndLog("Render");
-	}
-	void render() {
-		Log::StartLog("Render");
-		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		CUstream stream;
-		CUDA_CHECK(cudaStreamCreate(&stream));
-
-		sutil::Camera cam;
-		configureCamera(cam, render_option_.image_width, render_option_.image_height);
-
-		Params params;
-		CUdeviceptr d_param;
-		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
-
-		std::string data = "";
-		if (render_option_.use_date) {
-			data = "data";
-		}
-
-		Timer rendering_timer;
-		rendering_timer.Start();
-		spdlog::info("Animation Rendering Start");
-		for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
-		{
-			float time = frame / float(render_option_.fps);
-			unsigned int spp = render_option_.max_spp;
-			std::cout << time << std::endl;
-
-			spdlog::info("IAS Update Start");
-			updateIASMatrix(time);
-			spdlog::info("IAS Update Finished");
-
-			spdlog::info("Camera Update");
-			float3 camera_pos;
-			float3 camera_dir;
-			float3 camera_up;
-			float3 camera_right;
-			float camera_f;
-			{
-				camera_f = 2.0 / std::tan(render_option_.camera_fov);
-				if (render_option_.camera_animation_id != -1 && render_option_.allow_camera_animation) {
-					auto& anim = scene_data_.animations[render_option_.camera_animation_id];
-					Affine4x4 affine_pos = anim.getAnimationAffine(time);
-					Affine4x4 affine_dir = anim.getRotateAnimationAffine(time);
-
-					float4 trans_camera_pos = affine_pos * make_float4(render_option_.camera_position, 1.0);
-					float4 trans_camera_dir = affine_dir * make_float4(render_option_.camera_direction, 0.0);
-					float4 trans_camera_up = affine_dir * make_float4(make_float3(0, 1, 0), 0.0);
-
-					camera_pos = make_float3(trans_camera_pos);
-					camera_dir = make_float3(trans_camera_dir);
-					camera_up = make_float3(trans_camera_up);
-					camera_right = normalize(cross(camera_dir, camera_up));
-
-					std::cout << "Camera Dir" << camera_dir << std::endl;
-					std::cout << "Camera Up" << camera_up << std::endl;
-					std::cout << "Camera Right" << camera_right << std::endl;
-				}
-				else {
-					camera_pos = render_option_.camera_position;
-					camera_dir = render_option_.camera_direction;
-
-					camera_up = cross(camera_dir, make_float3(0, 1, 0));
-					camera_right = cross(camera_up, camera_dir);
-				}
-			}
-
-			spdlog::info("Camera Update Finished");
-
-			params.image = output_buffer.map();
-			params.image_width = render_option_.image_width;
-			params.image_height = render_option_.image_height;
-			params.traversal_handle = ias_handle_;
-
-			params.spp = spp;
-			params.frame = frame;
-
-			params.camera_pos = camera_pos;
-			params.camera_dir = camera_dir;
-			params.camera_up = camera_up;
-			params.camera_right = camera_right;
-			params.camera_f = camera_f;
-
-			params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
-			params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
-			params.normals = reinterpret_cast<float3*>(normals_buffer_.device_ptr);
-			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
-			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
-			params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
-			params.instance_count = scene_data_.instances.size();
-			params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
-			params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
-			params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
-
 			params.light_prim_ids = reinterpret_cast<unsigned int*>(light_prim_ids_buffer_.device_ptr);
 			params.light_prim_count = scene_data_.light_prim_ids.size();
 			params.light_prim_emission = reinterpret_cast<float3*>(light_prim_emission_buffer_.device_ptr);
-
-			params.ibl_texture = ibl_texture_object_;
-			params.ibl_intensity = render_option_.IBL_intensity;
+			params.instance_count = scene_data_.instances.size();
 
 			params.RAYTYPE = RAYTYPE_;
 
@@ -1180,5 +1056,142 @@ public:
 		spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
 		Log::EndLog("Render");
 	}
+	//void render() {
+	//	Log::StartLog("Render");
+	//	sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+	//	CUstream stream;
+	//	CUDA_CHECK(cudaStreamCreate(&stream));
+
+	//	sutil::Camera cam;
+	//	configureCamera(cam, render_option_.image_width, render_option_.image_height);
+
+	//	Params params;
+	//	CUdeviceptr d_param;
+	//	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
+
+	//	std::string data = "";
+	//	if (render_option_.use_date) {
+	//		data = "data";
+	//	}
+
+	//	Timer rendering_timer;
+	//	rendering_timer.Start();
+	//	spdlog::info("Animation Rendering Start");
+	//	for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
+	//	{
+	//		float time = frame / float(render_option_.fps);
+	//		unsigned int spp = render_option_.max_spp;
+	//		std::cout << time << std::endl;
+
+	//		spdlog::info("IAS Update Start");
+	//		updateIASMatrix(time);
+	//		spdlog::info("IAS Update Finished");
+
+	//		spdlog::info("Camera Update");
+	//		float3 camera_pos;
+	//		float3 camera_dir;
+	//		float3 camera_up;
+	//		float3 camera_right;
+	//		float camera_f;
+	//		{
+	//			camera_f = 2.0 / std::tan(render_option_.camera_fov);
+	//			if (render_option_.camera_animation_id != -1 && render_option_.allow_camera_animation) {
+	//				auto& anim = scene_data_.animations[render_option_.camera_animation_id];
+	//				Affine4x4 affine_pos = anim.getAnimationAffine(time);
+	//				Affine4x4 affine_dir = anim.getRotateAnimationAffine(time);
+
+	//				float4 trans_camera_pos = affine_pos * make_float4(render_option_.camera_position, 1.0);
+	//				float4 trans_camera_dir = affine_dir * make_float4(render_option_.camera_direction, 0.0);
+	//				float4 trans_camera_up = affine_dir * make_float4(make_float3(0, 1, 0), 0.0);
+
+	//				camera_pos = make_float3(trans_camera_pos);
+	//				camera_dir = make_float3(trans_camera_dir);
+	//				camera_up = make_float3(trans_camera_up);
+	//				camera_right = normalize(cross(camera_dir, camera_up));
+
+	//				std::cout << "Camera Dir" << camera_dir << std::endl;
+	//				std::cout << "Camera Up" << camera_up << std::endl;
+	//				std::cout << "Camera Right" << camera_right << std::endl;
+	//			}
+	//			else {
+	//				camera_pos = render_option_.camera_position;
+	//				camera_dir = render_option_.camera_direction;
+
+	//				camera_up = cross(camera_dir, make_float3(0, 1, 0));
+	//				camera_right = cross(camera_up, camera_dir);
+	//			}
+	//		}
+
+	//		spdlog::info("Camera Update Finished");
+
+	//		params.image = output_buffer.map();
+	//		params.image_width = render_option_.image_width;
+	//		params.image_height = render_option_.image_height;
+	//		params.traversal_handle = ias_handle_;
+
+	//		params.spp = spp;
+	//		params.frame = frame;
+
+	//		params.camera_pos = camera_pos;
+	//		params.camera_dir = camera_dir;
+	//		params.camera_up = camera_up;
+	//		params.camera_right = camera_right;
+	//		params.camera_f = camera_f;
+
+	//		params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
+	//		params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
+	//		params.normals = reinterpret_cast<float3*>(normals_buffer_.device_ptr);
+	//		params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
+	//		params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
+
+	//		params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
+
+	//		params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
+	//		params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
+	//		params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
+
+	//		params.light_prim_ids = reinterpret_cast<unsigned int*>(light_prim_ids_buffer_.device_ptr);
+	//		params.light_prim_count = scene_data_.light_prim_ids.size();
+	//		params.light_prim_emission = reinterpret_cast<float3*>(light_prim_emission_buffer_.device_ptr);
+	//		params.instance_count = scene_data_.instances.size();
+
+	//		params.ibl_texture = ibl_texture_object_;
+	//		params.ibl_intensity = render_option_.IBL_intensity;
+
+	//		params.RAYTYPE = RAYTYPE_;
+
+	//		CUDA_CHECK(cudaMemcpy(
+	//			reinterpret_cast<void*>(d_param),
+	//			&params, sizeof(params),
+	//			cudaMemcpyHostToDevice
+	//		));
+	//		Timer timer;
+	//		timer.Start();
+	//		spdlog::info("Start render frame {}", frame);
+	//		OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
+	//		CUDA_SYNC_CHECK();
+	//		timer.Stop();
+	//		spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
+	//		rendering_timer.Stop();
+	//		spdlog::info("Total Elapsed time {} ms", rendering_timer.getTimeS());
+
+	//		output_buffer.unmap();
+
+	//		sutil::ImageBuffer buffer;
+	//		buffer.data = output_buffer.getHostPointer();
+	//		buffer.width = render_option_.image_width;
+	//		buffer.height = render_option_.image_height;
+	//		buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
+	//		//sutil::displayBufferWindow("test", buffer);
+	//		std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
+	//		sutil::saveImage(imagename.c_str(), buffer, false);
+	//	}
+
+	//	CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
+
+	//	rendering_timer.Stop();
+	//	spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
+	//	Log::EndLog("Render");
+	//}
 };
 

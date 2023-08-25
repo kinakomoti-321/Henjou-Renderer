@@ -8,6 +8,7 @@
 
 __forceinline__ __device__ float3 light_sample(CMJState& state, float& pdf, float3& normal,float3& emission)
 {
+
 	if (params.light_prim_count < 1) {
 		pdf = -1.0;
 		normal = make_float3(0.0f);
@@ -18,12 +19,8 @@ __forceinline__ __device__ float3 light_sample(CMJState& state, float& pdf, floa
 	int index = (int)(p * params.light_prim_count);
 	if (index == params.light_prim_count) index--;
 
-	unsigned int prim_index = params.light_prim_ids[1];
+	unsigned int prim_index = params.light_prim_ids[index];
 
-	pdf = 1.0;
-	normal = make_float3(1.0);
-	emission = make_float3(1.0);
-	return make_float3(1.0);
 
 	//BinarySearch
 	unsigned int left = 0U;
@@ -61,12 +58,12 @@ __forceinline__ __device__ float3 light_sample(CMJState& state, float& pdf, floa
 	float f3 = sqrt(xi.x) * xi.y;
 	
 	const float3 light_position = v0 * f1 + v1 * f2 + v2 * f3;
-	const float3 light_normal = n0 * f1 + n1 * f2 + n2 * f3;
+	const float3 light_normal = normalize(n0 * f1 + n1 * f2 + n2 * f3);
 	
 	pdf = 1.0f / (light_area * params.light_prim_count);
 	normal = light_normal;
-	emission = make_float3(1.0);
-	//emission = params.light_prim_emission[index];
+	emission = params.light_prim_emission[index];
+
 	return light_position;
 }
 
