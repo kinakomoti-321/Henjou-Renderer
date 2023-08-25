@@ -169,6 +169,7 @@ public:
 		m_clearcoat = prd.clearcoat;
 		m_clearcoatGloss = 1.0;
 		m_clearcoatAlpha = lerp(0.1f, 0.001f, m_clearcoatGloss);
+
 	}
 
 	__device__ float3 evaluateBSDF(const float3& wo, const float3& wi) {

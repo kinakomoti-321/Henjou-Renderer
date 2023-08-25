@@ -183,6 +183,7 @@ SET(CUDA_NVCC_DEPEND
  "C:/Users/PC/Documents/Optix/build/include/kernel/BSDFs.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/Payload.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/cmj.h"
+ "C:/Users/PC/Documents/Optix/build/include/kernel/color.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/disneyBRDF.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/math.h"
  "C:/Users/PC/Documents/Optix/build/include/kernel/rt.h"

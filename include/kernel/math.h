@@ -88,7 +88,16 @@ static __forceinline__ __device__ float absdot(const float3& a,const float3& b) 
 	return fabsf(dot(a, b));
 }
 
-static __forceinline __device__ float lerp(const float& a, const float& b, const float& t) {
+static __forceinline__ __device__ float lerp(const float& a, const float& b, const float& t) {
 	return (1 - t) * a + t * b;
+}
+
+static __forceinline__ __device__ float smoothstep(const float a,const float b,const float t) {
+	float x = clamp((t - a) / (b - a), 0.0f, 1.0f);
+	return x * x * (3.0f - 2.0f * x);
+}
+
+static __forceinline__ __device__ float step(const float a,const float x) {
+	return float(a < x);
 }
 
