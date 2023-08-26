@@ -25,6 +25,7 @@
 #include <external/glm/glm/glm.hpp>
 
 #include <HenjouRenderer/henjouRenderer.h>
+#include <renderer/denoiser.h>
 #include <loader/gltfloader.h>
 #include <file_reader.h>
 #include <renderer/scene.h>
@@ -68,6 +69,36 @@ struct GASData {
 	OptixTraversableHandle handle;
 	CUdeviceptr            d_gas_output_buffer;
 };
+
+inline float3 toSRGB(const float3& col) {
+	float  invGamma = 1.0f / 2.4f;
+	float3 powed = make_float3(std::pow(col.x, invGamma), std::pow(col.y, invGamma), std::pow(col.z, invGamma));
+	return make_float3(
+		col.x < 0.0031308f ? 12.92f * col.x : 1.055f * powed.x - 0.055f,
+		col.y < 0.0031308f ? 12.92f * col.y : 1.055f * powed.y - 0.055f,
+		col.z < 0.0031308f ? 12.92f * col.z : 1.055f * powed.z - 0.055f);
+}
+
+inline unsigned char quantizeUnsignedChar(float x) {
+	enum { N = (1 << 8) - 1, Np1 = (1 << 8) };
+	return (unsigned char)std::min((unsigned int)(x * (float)Np1), (unsigned int)N);
+}
+
+void float4ConvertColor(float4* data, uchar4* color, unsigned int width, unsigned int height) {
+	for (int j = 0; j < height; j++) {
+		for (int i = 0; i < width; i++) {
+			unsigned int idx = i + width * j;
+			float3 col = make_float3(data[idx]);
+			col = toSRGB(col);
+
+			color[idx] = make_uchar4(
+				quantizeUnsignedChar(col.x),
+				quantizeUnsignedChar(col.y),
+				quantizeUnsignedChar(col.z),
+				(unsigned char)255);
+		}
+	}
+}
 
 class Renderer {
 private:
@@ -226,6 +257,8 @@ private:
 
 		CUcontext cuCtx = 0;
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
+
+
 		
 		size_t heap_size = 65536;
 		CUDA_CHECK(cudaDeviceSetLimit(cudaLimitStackSize, heap_size));
@@ -925,6 +958,14 @@ public:
 
 		Log::StartLog("Render");
 		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+
+		sutil::CUDAOutputBuffer<float4> AOV_Color(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		sutil::CUDAOutputBuffer<float4> AOV_Albedo(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		sutil::CUDAOutputBuffer<float4> AOV_Normal(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		sutil::CUDAOutputBuffer<float2> AOV_Flow(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		sutil::CUDAOutputBuffer<float4> AOV_Output(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		sutil::CUDAOutputBuffer<float4> AOV_PreOutput(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+
 		CUstream stream;
 		CUDA_CHECK(cudaStreamCreate(&stream));
 
@@ -935,6 +976,9 @@ public:
 		CUdeviceptr d_param;
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
 
+		const unsigned int image_width = render_option_.image_width;
+		const unsigned int image_height = render_option_.image_height;
+
 		std::string data = "";
 		if (render_option_.use_date) {
 			data = "data";
@@ -943,6 +987,9 @@ public:
 		Timer rendering_timer;
 		rendering_timer.Start();
 		spdlog::info("Animation Rendering Start");
+
+		OptixDenoiserManager denosier_manager(image_width, image_height, optix_context_, stream,DenoiseType::NONE);
+
 		for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
 		{
 			float time = frame / float(render_option_.fps);
@@ -1024,16 +1071,39 @@ public:
 
 			params.RAYTYPE = RAYTYPE_;
 
+			//AOV
+			params.aov_albedo = reinterpret_cast<float4*>(AOV_Albedo.map());
+			params.aov_color = reinterpret_cast<float4*>(AOV_Color.map());
+			params.aov_normal = reinterpret_cast<float4*>(AOV_Normal.map());
+			params.aov_flow = reinterpret_cast<float4*>(AOV_Flow.map());
+
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(d_param),
 				&params, sizeof(params),
 				cudaMemcpyHostToDevice
 			));
+
 			Timer timer;
 			timer.Start();
 			spdlog::info("Start render frame {}", frame);
 			OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
 			CUDA_SYNC_CHECK();
+			
+			//Denoiser
+			{
+				denosier_manager.layerSet(
+					reinterpret_cast<float4*>(AOV_Albedo.map()),
+					reinterpret_cast<float4*>(AOV_Normal.map()),
+					reinterpret_cast<float2*>(AOV_Flow.map()),
+					reinterpret_cast<float4*>(AOV_Color.map()),
+					reinterpret_cast<float4*>(AOV_Output.map()),
+					reinterpret_cast<float4*>(AOV_PreOutput.map())
+				);
+
+				denosier_manager.denoise();
+				CUDA_SYNC_CHECK();
+			}
+
 			timer.Stop();
 			spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
 			rendering_timer.Stop();
@@ -1041,6 +1111,11 @@ public:
 
 			output_buffer.unmap();
 
+			std::vector<uchar4> bufuchar(image_width* image_height);
+			AOV_Output.unmap();
+
+			float4ConvertColor(AOV_Output.getHostPointer(), bufuchar.data(), image_width, image_height);
+			
 			sutil::ImageBuffer buffer;
 			buffer.data = output_buffer.getHostPointer();
 			buffer.width = render_option_.image_width;
@@ -1056,137 +1131,5 @@ public:
 		spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
 		Log::EndLog("Render");
 	}
-	//void render() {
-	//	Log::StartLog("Render");
-	//	sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-	//	CUstream stream;
-	//	CUDA_CHECK(cudaStreamCreate(&stream));
-
-	//	sutil::Camera cam;
-	//	configureCamera(cam, render_option_.image_width, render_option_.image_height);
-
-	//	if (render_option_.use_date) {
-	//		data = "data";
-	//	}
-
-	//	Timer rendering_timer;
-	//	rendering_timer.Start();
-	//	spdlog::info("Animation Rendering Start");
-	//	for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
-	//	{
-	//		float time = frame / float(render_option_.fps);
-	//		unsigned int spp = render_option_.max_spp;
-	//		std::cout << time << std::endl;
-
-	//		spdlog::info("IAS Update Start");
-	//		updateIASMatrix(time);
-	//		spdlog::info("IAS Update Finished");
-
-	//		spdlog::info("Camera Update");
-	//		float3 camera_pos;
-	//		float3 camera_dir;
-	//		float3 camera_up;
-	//		float3 camera_right;
-	//		float camera_f;
-	//		{
-	//			camera_f = 2.0 / std::tan(render_option_.camera_fov);
-	//			if (render_option_.camera_animation_id != -1 && render_option_.allow_camera_animation) {
-	//				auto& anim = scene_data_.animations[render_option_.camera_animation_id];
-	//				Affine4x4 affine_pos = anim.getAnimationAffine(time);
-	//				Affine4x4 affine_dir = anim.getRotateAnimationAffine(time);
-
-	//				float4 trans_camera_pos = affine_pos * make_float4(render_option_.camera_position, 1.0);
-	//				float4 trans_camera_dir = affine_dir * make_float4(render_option_.camera_direction, 0.0);
-	//				float4 trans_camera_up = affine_dir * make_float4(make_float3(0, 1, 0), 0.0);
-
-	//				camera_pos = make_float3(trans_camera_pos);
-	//				camera_dir = make_float3(trans_camera_dir);
-	//				camera_up = make_float3(trans_camera_up);
-	//				camera_right = normalize(cross(camera_dir, camera_up));
-
-	//				std::cout << "Camera Dir" << camera_dir << std::endl;
-	//				std::cout << "Camera Up" << camera_up << std::endl;
-	//				std::cout << "Camera Right" << camera_right << std::endl;
-	//			}
-	//			else {
-	//				camera_pos = render_option_.camera_position;
-	//				camera_dir = render_option_.camera_direction;
-
-	//				camera_up = cross(camera_dir, make_float3(0, 1, 0));
-	//				camera_right = cross(camera_up, camera_dir);
-	//			}
-	//		}
-
-	//		spdlog::info("Camera Update Finished");
-
-	//		params.image = output_buffer.map();
-	//		params.image_width = render_option_.image_width;
-	//		params.image_height = render_option_.image_height;
-	//		params.traversal_handle = ias_handle_;
-
-	//		params.spp = spp;
-	//		params.frame = frame;
-
-	//		params.camera_pos = camera_pos;
-	//		params.camera_dir = camera_dir;
-	//		params.camera_up = camera_up;
-	//		params.camera_right = camera_right;
-	//		params.camera_f = camera_f;
-
-	//		params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
-	//		params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
-	//		params.normals = reinterpret_cast<float3*>(normals_buffer_.device_ptr);
-	//		params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
-	//		params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
-
-	//		params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
-
-	//		params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
-	//		params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
-	//		params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
-
-	//		params.light_prim_ids = reinterpret_cast<unsigned int*>(light_prim_ids_buffer_.device_ptr);
-	//		params.light_prim_count = scene_data_.light_prim_ids.size();
-	//		params.light_prim_emission = reinterpret_cast<float3*>(light_prim_emission_buffer_.device_ptr);
-	//		params.instance_count = scene_data_.instances.size();
-
-	//		params.ibl_texture = ibl_texture_object_;
-	//		params.ibl_intensity = render_option_.IBL_intensity;
-
-	//		params.RAYTYPE = RAYTYPE_;
-
-	//		CUDA_CHECK(cudaMemcpy(
-	//			reinterpret_cast<void*>(d_param),
-	//			&params, sizeof(params),
-	//			cudaMemcpyHostToDevice
-	//		));
-	//		Timer timer;
-	//		timer.Start();
-	//		spdlog::info("Start render frame {}", frame);
-	//		OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
-	//		CUDA_SYNC_CHECK();
-	//		timer.Stop();
-	//		spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
-	//		rendering_timer.Stop();
-	//		spdlog::info("Total Elapsed time {} ms", rendering_timer.getTimeS());
-
-	//		output_buffer.unmap();
-
-	//		sutil::ImageBuffer buffer;
-	//		buffer.data = output_buffer.getHostPointer();
-	//		buffer.width = render_option_.image_width;
-	//		buffer.height = render_option_.image_height;
-	//		buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
-	//		//sutil::displayBufferWindow("test", buffer);
-	//		std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
-	//		sutil::saveImage(imagename.c_str(), buffer, false);
-	//	}
-
-	//	CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
-
-	//	rendering_timer.Stop();
-	//	spdlog::info("Animation Rendering End : {}ms", rendering_timer.getTimeS());
-	//	Log::EndLog("Render");
-	//}
 };
 

@@ -36,6 +36,7 @@ enum DenoiseType {
 	NONE,
 	TEMPORAL
 };
+
 class OptixDenoiserManager {
 private:
 	OptixDeviceContext context = nullptr;
@@ -73,7 +74,6 @@ public:
 		{
 		case NONE:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_LDR;
-			model_kind = OPTIX_DENOISER_MODEL_KIND_TEMPORAL;
 			break;
 		case TEMPORAL:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_TEMPORAL;
@@ -141,15 +141,15 @@ public:
 		OptixDenoiserGuideLayer guidelayer;
 		guidelayer.albedo = createOptixImage2D(width, height, albedo);
 		guidelayer.normal = createOptixImage2D(width, height, normal);
-		guidelayer.flow = createOptixImage2D(width, height, flow);
+		//guidelayer.flow = createOptixImage2D(width, height, flow);
 
 		OptixDenoiserLayer layers;
 		layers.input = createOptixImage2D(width, height, input);
-		layers.previousOutput = createOptixImage2D(width, height, previous);
+		//layers.previousOutput = createOptixImage2D(width, height, previous);
 		layers.output = createOptixImage2D(width, height, output);
 
 		OptixDenoiserParams param;
-		param.denoiseAlpha = 0;
+		param.denoiseAlpha = OPTIX_DENOISER_ALPHA_MODE_COPY;
 		param.blendFactor = 0;
 		param.hdrAverageColor = 0;
 		param.hdrIntensity = 0;
