@@ -35,8 +35,8 @@ __device__ float shlickFresnel(const float no, const float ni, const float3& w, 
 	return F0 + (1.0 - F0) * pow(term1, 5.0);
 }
 
-static __forceinline__ __device__ float3 poler2xyzDirection(const float theta,const float phi) {
-	return make_float3(sin(theta) * cos(phi), cos(theta),  sin(theta) * sin(phi));
+static __forceinline__ __device__ float3 poler2xyzDirection(const float theta, const float phi) {
+	return make_float3(sin(theta) * cos(phi), cos(theta), sin(theta) * sin(phi));
 }
 
 static __forceinline__ __device__ void orthonormal_basis(const float3& normal, float3& tangent, float3& binormal)
@@ -62,9 +62,11 @@ static __forceinline__ __device__ float3 local_to_world(const float3& v,
 	const float3& n,
 	const float3& b)
 {
-	return make_float3(v.x * t.x + v.y * n.x + v.z * b.x,
+	return make_float3(
+		v.x * t.x + v.y * n.x + v.z * b.x,
 		v.x * t.y + v.y * n.y + v.z * b.y,
-		v.x * t.z + v.y * n.z + v.z * b.z);
+		v.x * t.z + v.y * n.z + v.z * b.z
+	);
 }
 
 static __forceinline__ __device__ float3 transform_position(const Matrix4x3& mat, const float3& pos) {
@@ -99,7 +101,7 @@ static __forceinline__ __device__  bool refract(const float3& v, const float3& n
 	return true;
 }
 
-static __forceinline__ __device__ float absdot(const float3& a,const float3& b) {
+static __forceinline__ __device__ float absdot(const float3& a, const float3& b) {
 	return fabsf(dot(a, b));
 }
 
@@ -107,12 +109,15 @@ static __forceinline__ __device__ float lerp(const float& a, const float& b, con
 	return (1 - t) * a + t * b;
 }
 
-static __forceinline__ __device__ float smoothstep(const float a,const float b,const float t) {
+static __forceinline__ __device__ float smoothstep(const float a, const float b, const float t) {
 	float x = clamp((t - a) / (b - a), 0.0f, 1.0f);
 	return x * x * (3.0f - 2.0f * x);
 }
 
-static __forceinline__ __device__ float step(const float a,const float x) {
+static __forceinline__ __device__ float step(const float a, const float x) {
 	return float(a < x);
 }
 
+static __forceinline __device__ float3 hemisphereVector(const float theta, const float phi) {
+	return make_float3(cosf(phi) * sinf(theta), cosf(theta), sinf(phi) * sinf(theta));
+}

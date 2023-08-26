@@ -20,8 +20,6 @@ private:
 	float m_clearcoatGloss;
 	float m_clearcoatAlpha;
 
-
-
 	//Cosine Importance Sampling
 	__device__ float3 sampleDiffuse(const float2& uv, float& pdf) {
 		float theta = 0.5 * acos(1 - 2.0 * uv.x);
@@ -52,8 +50,8 @@ private:
 	}
 
 	__device__ float GGX_Lambda(const float3& w) {
-		float term1 = (m_alpha * m_alpha * w.x * w.x + m_alpha * m_alpha * w.z * w.z) / (w.y * w.y);
-		return 0.5f * (-1.0f + sqrtf(term1));
+		float delta = 1.0f + (m_alpha * m_alpha * w.x * w.x + m_alpha * m_alpha * w.z * w.z) / (w.y * w.y);
+		return (-1.0 + sqrtf(delta)) * 0.5f;
 	}
 
 	//https://arxiv.org/pdf/2306.05044.pdf
@@ -198,8 +196,8 @@ public:
 
 		//Subsurface
 		{
-			float deltacos = 1 / (dot_wi_n + dot_wo_n) - 0.5;
-			f_subsurface = m_basecolor * INV_PI * 1.25 * (f_tsi * f_tso * deltacos + 0.5);
+			float deltacos = 1.0f / (dot_wi_n + dot_wo_n) - 0.5f;
+			f_subsurface = m_basecolor * INV_PI * 1.25f * (f_tsi * f_tso * deltacos + 0.5f);
 		}
 
 		//Specular
@@ -227,82 +225,88 @@ public:
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		//TODO nantokashitai
 		float diffuseWeight = 1.0f * (1.0f - m_metallic);
-		float specularWeight = 1.0;
-		float clearcoatWeight = m_clearcoat;
+		float specularWeight = 0.5f;
+		float clearcoatWeight = 0.0f;
 
-		float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
+		//float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
+		float sumWeight = diffuseWeight + specularWeight;
 		float dw = diffuseWeight / sumWeight;
 		float sw = specularWeight / sumWeight;
-		float cw = clearcoatWeight / sumWeight;
+		//float cw = clearcoatWeight / sumWeight;
 
 		float select_p = cmj_1d(state);
 
 		float pdf_diffuse = 1.0f;
 		float pdf_specular = 1.0f;
-		float pdf_clearcoat = 1.0f;
+		//float pdf_clearcoat = 0.0f;
 		float2 xi = cmj_2d(state);
 
 		if (select_p < dw) {
 			//Diffuse
 			wi = sampleDiffuse(xi, pdf_diffuse);
 			float3 wm = normalize(wi + wo);
-			pdf_specular = getPDFSpecular(wm, wo);
-			pdf_clearcoat = getPDFClearcoat(wm, wo);
 
+			pdf_specular = getPDFSpecular(wm, wo);
 		}
-		else if (select_p < dw + sw) {
+		else {
 			//Specular
 			float3 wm = sampleSpecular(xi, wo, pdf_specular);
 			wi = reflect(-wo, wm);
 
 			pdf_diffuse = getPDFDiffuse(wi);
-			pdf_clearcoat = getPDFClearcoat(wm, wo);
-
-		}
-		else {
-			//Clearcoat
-			float3 wm = sampleClearcoat(xi, wo, pdf_clearcoat);
-			wi = reflect(-wo, wm);
-
-			pdf_diffuse = getPDFDiffuse(wi);
-			pdf_specular = getPDFSpecular(wm, wo);
 		}
 
-		pdf = dw * pdf_diffuse + sw * pdf_specular + cw * pdf_clearcoat;
+		pdf = dw * pdf_diffuse + sw * pdf_specular;
 
-		//float3 wm = sampleSpecular(xi, wo, pdf_specular);
-		//wi = reflect(-wo, wm);
-		//pdf = pdf_specular;
-		//float3 wm = sampleClearcoat(xi, wo, pdf_clearcoat);
-		//wi = reflect(-wo, wm);
-		//pdf = pdf_clearcoat;
+		//if (select_p < dw) {
+		//	//Diffuse
+		//	wi = sampleDiffuse(xi, pdf_diffuse);
+		//	float3 wm = normalize(wi + wo);
+		//	pdf_specular = getPDFSpecular(wm, wo);
+		//	pdf_clearcoat = getPDFClearcoat(wm, wo);
 
+		//}
+		//else if (select_p < dw + sw) {
+		//	//Specular
+		//	float3 wm = sampleSpecular(xi, wo, pdf_specular);
+		//	wi = reflect(-wo, wm);
 
+		//	pdf_diffuse = getPDFDiffuse(wi);
+		//	pdf_clearcoat = getPDFClearcoat(wm, wo);
+
+		//}
+		//else {
+		//	//Clearcoat
+		//	float3 wm = sampleClearcoat(xi, wo, pdf_clearcoat);
+		//	wi = reflect(-wo, wm);
+
+		//	pdf_diffuse = getPDFDiffuse(wi);
+		//	pdf_specular = getPDFSpecular(wm, wo);
+		//}
 
 		if (wi.y < 0.0) {
 			pdf = 1.0f;
 			return make_float3(0.0);
 		}
 
-
 		return evaluateBSDF(wo, wi);
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {
 		float diffuseWeight = 1.0f * (1.0f - m_metallic);
-		float specularWeight = 1.0;
-		float clearcoatWeight = m_clearcoat;
+		float specularWeight = 0.5f;
+		float clearcoatWeight = 0.0;
 
 		float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
 		float dw = diffuseWeight / sumWeight;
 		float sw = specularWeight / sumWeight;
-		float cw = clearcoatWeight / sumWeight;
+		//float cw = clearcoatWeight / sumWeight;
 
 		float3 wm = normalize(wo + wi);
 		float pdf_diffuse = getPDFDiffuse(wi);
 		float pdf_specular = getPDFSpecular(wm, wo);
-		float kpdf_clearcoat = getPDFClearcoat(wm, wo);
+		//float pdf_clearcoat = getPDFClearcoat(wm, wo);
 
-		return dw * pdf_diffuse + sw * pdf_specular + cw * kpdf_clearcoat;
+		return dw * pdf_diffuse + sw * pdf_specular;
 	}
 };

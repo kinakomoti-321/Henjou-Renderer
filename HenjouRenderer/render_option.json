@@ -4,14 +4,14 @@
         "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 40
+        "max_spp" : 500
     },
 
     "Render_mode" : "Default",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "cornelbox.gltf"
+        "gltf_filename" : "nee_test.gltf"
     },
 
     "Camera" : {
