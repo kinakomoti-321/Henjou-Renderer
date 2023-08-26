@@ -118,7 +118,7 @@ private:
 	}
 
 	__device__ float clearcoat_Lambda(const float3& w, const float alpha) {
-		float term1 = (alpha * alpha * w.x * w.x + alpha * alpha * w.z * w.z) / (w.y * w.y);
+		float term1 = 1.0f + (alpha * alpha * w.x * w.x + alpha * alpha * w.z * w.z) / (w.y * w.y);
 		return 0.5f * (-1.0f + sqrtf(term1));
 	}
 
@@ -228,61 +228,63 @@ public:
 		float specularWeight = 0.5f;
 		float clearcoatWeight = 0.0f;
 
-		//float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
-		float sumWeight = diffuseWeight + specularWeight;
+		float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
+		//float sumWeight = diffuseWeight + specularWeight;
 		float dw = diffuseWeight / sumWeight;
 		float sw = specularWeight / sumWeight;
-		//float cw = clearcoatWeight / sumWeight;
+		float cw = clearcoatWeight / sumWeight;
 
 		float select_p = cmj_1d(state);
 
 		float pdf_diffuse = 1.0f;
 		float pdf_specular = 1.0f;
-		//float pdf_clearcoat = 0.0f;
+		float pdf_clearcoat = 1.0f;
 		float2 xi = cmj_2d(state);
-
-		if (select_p < dw) {
-			//Diffuse
-			wi = sampleDiffuse(xi, pdf_diffuse);
-			float3 wm = normalize(wi + wo);
-
-			pdf_specular = getPDFSpecular(wm, wo);
-		}
-		else {
-			//Specular
-			float3 wm = sampleSpecular(xi, wo, pdf_specular);
-			wi = reflect(-wo, wm);
-
-			pdf_diffuse = getPDFDiffuse(wi);
-		}
-
-		pdf = dw * pdf_diffuse + sw * pdf_specular;
 
 		//if (select_p < dw) {
 		//	//Diffuse
 		//	wi = sampleDiffuse(xi, pdf_diffuse);
 		//	float3 wm = normalize(wi + wo);
-		//	pdf_specular = getPDFSpecular(wm, wo);
-		//	pdf_clearcoat = getPDFClearcoat(wm, wo);
 
+		//	pdf_specular = getPDFSpecular(wm, wo);
 		//}
-		//else if (select_p < dw + sw) {
+		//else {
 		//	//Specular
 		//	float3 wm = sampleSpecular(xi, wo, pdf_specular);
 		//	wi = reflect(-wo, wm);
 
 		//	pdf_diffuse = getPDFDiffuse(wi);
-		//	pdf_clearcoat = getPDFClearcoat(wm, wo);
-
 		//}
-		//else {
-		//	//Clearcoat
-		//	float3 wm = sampleClearcoat(xi, wo, pdf_clearcoat);
-		//	wi = reflect(-wo, wm);
 
-		//	pdf_diffuse = getPDFDiffuse(wi);
-		//	pdf_specular = getPDFSpecular(wm, wo);
-		//}
+		//pdf = dw * pdf_diffuse + sw * pdf_specular;
+
+		if (select_p < dw) {
+			//Diffuse
+			wi = sampleDiffuse(xi, pdf_diffuse);
+			float3 wm = normalize(wi + wo);
+			pdf_specular = getPDFSpecular(wm, wo);
+			pdf_clearcoat = getPDFClearcoat(wm, wo);
+
+		}
+		else if (select_p < dw + sw) {
+			//Specular
+			float3 wm = sampleSpecular(xi, wo, pdf_specular);
+			wi = reflect(-wo, wm);
+
+			pdf_diffuse = getPDFDiffuse(wi);
+			pdf_clearcoat = getPDFClearcoat(wm, wo);
+
+		}
+		else {
+			//Clearcoat
+			float3 wm = sampleClearcoat(xi, wo, pdf_clearcoat);
+			wi = reflect(-wo, wm);
+
+			pdf_diffuse = getPDFDiffuse(wi);
+			pdf_specular = getPDFSpecular(wm, wo);
+		}
+
+		pdf = dw * pdf_diffuse + sw * pdf_specular + cw * pdf_clearcoat;
 
 		if (wi.y < 0.0) {
 			pdf = 1.0f;
@@ -293,14 +295,15 @@ public:
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {
+		//Clearcoat‘½•ªŽg‚í‚È‚¢‚Ì‚Å•ú’u
 		float diffuseWeight = 1.0f * (1.0f - m_metallic);
 		float specularWeight = 0.5f;
-		float clearcoatWeight = 0.0;
+		float clearcoatWeight = 0.0f;
 
 		float sumWeight = diffuseWeight + specularWeight + clearcoatWeight;
 		float dw = diffuseWeight / sumWeight;
 		float sw = specularWeight / sumWeight;
-		//float cw = clearcoatWeight / sumWeight;
+		float cw = clearcoatWeight / sumWeight;
 
 		float3 wm = normalize(wo + wi);
 		float pdf_diffuse = getPDFDiffuse(wi);
