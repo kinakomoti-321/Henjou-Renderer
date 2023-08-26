@@ -238,40 +238,6 @@ __device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDirection, CMJState 
 
 				LTE += throughput * (bsdf * G * cosine1 / light_pdf) * light_color;
 			}
-
-			//Payload prd_shadow;
-			//prd_shadow.is_hit = false;
-
-			//float light_pdf;
-			//float3 light_normal;
-			//float3 light_position;
-			//float3 light_emission;
-
-			//light_position = light_sample(state, light_pdf, light_normal, light_emission);
-
-			//float3 light_direction = light_position - prd.position;
-			//float light_distance = length(light_direction);
-			//light_direction = normalize(light_direction);
-
-			//TraceOcculution(
-			//	params.traversal_handle,
-			//	prd.position,
-			//	light_direction,
-			//	0.001f,
-			//	light_distance - 0.001f,
-			//	&prd_shadow
-			//);
-
-			//if (!prd_shadow.is_hit) {
-			//	float cosine1 = absdot(n, light_direction);
-			//	float cosine2 = absdot(light_normal, -light_direction);
-
-			//	float3 local_wi = world_to_local(light_direction, t, n, b);
-			//	float3 bsdf = surface_bsdf.evaluateBSDF(local_wo, local_wi);
-
-			//	float G = cosine2 / (light_distance * light_distance);
-			//	LTE += throughput * (bsdf * G * cosine1 / light_pdf) * light_emission;
-			//}
 		}
 
 		float pdf = 1.0;

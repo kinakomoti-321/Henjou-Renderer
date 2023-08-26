@@ -518,12 +518,10 @@ public:
 	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
-		//return make_float3(1.0);
 		return disney.sampleBSDF(wo, wi, pdf, state);
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {
-		//return 1.0f;
-		//return ggx.getPDF(wo, wi);
+		return disney.getPDF(wo, wi);
 	}
 };
