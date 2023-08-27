@@ -494,8 +494,9 @@ private:
 		pipeline_compile_options_.usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE;
 
 		//TODO PTXFile‚ÌQÆ‚ğŠO•”‚©‚ç‚¢‚¶‚ê‚é‚æ‚¤‚É‚µ‚Ä‚¨‚¢‚Ä
+		//Test
 		size_t      inputSize = 0;
-		const std::vector<char> input = read_file("C:\\Users\\PC\\Documents\\Optix\\build\\lib\\ptx\\Debug\\HenjouRenderer_generated_henjouRendererCU.cu.optixir");
+		const std::vector<char> input = read_file(render_option_.ptxfile_path);
 		inputSize = input.size();
 
 		OPTIX_CHECK_LOG(optixModuleCreate(

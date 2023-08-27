@@ -22,7 +22,7 @@
     },
 
     "PTX_File":{
-        "ptxfile_path" : "C:\\Users\\PC\\Documents\\Optix\\build\\lib\\ptx\\Debug\\HenjouRenderer_generated_henjouRendererCU.cu.optixir"
+        "ptxfile_path" : "../alib/ptx/Debug/HenjouRenderer_generated_henjouRendererCU.cu.optixir"
     },
 
     "Animation" : {
