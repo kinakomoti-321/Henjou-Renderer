@@ -36,6 +36,39 @@
     <ClInclude Include="..\include\renderer\denoiser.h">
       <Filter>CUDA Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\renderer\animation.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\material.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\render_option.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\renderer.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\scene.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\renderer\texture.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\gltfloader.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\material.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\objloader.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\render_json_loader.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\loader\texture_load.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
@@ -60,6 +93,9 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{22B1E3DF-EAF9-3567-A50F-FA1DBE29F013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CUDA Files\NewFilter1">
+      <UniqueIdentifier>{79ad5036-4983-4b4b-af0e-d975c07e28de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

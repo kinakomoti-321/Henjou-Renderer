@@ -74,8 +74,8 @@ public:
 		in_width_ = in_width;
 		in_height_ = in_height;
 
-		out_width_ = in_width_;
-		out_height_ = in_height_;
+		out_width_ = out_width;
+		out_height_ = out_height;
 
 		switch (denoise_type)
 		{
@@ -90,7 +90,6 @@ public:
 			break;
 		default:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_LDR;
-			model_kind = OPTIX_DENOISER_MODEL_KIND_TEMPORAL;
 			break;
 		}
 

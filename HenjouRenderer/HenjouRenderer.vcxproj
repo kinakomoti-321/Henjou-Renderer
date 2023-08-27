@@ -416,7 +416,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\include\kernel\math.h" />
     <ClInclude Include="..\include\kernel\Payload.h" />
     <ClInclude Include="..\include\kernel\rt.h" />
+    <ClInclude Include="..\include\loader\gltfloader.h" />
+    <ClInclude Include="..\include\loader\material.h" />
+    <ClInclude Include="..\include\loader\objloader.h" />
+    <ClInclude Include="..\include\loader\render_json_loader.h" />
+    <ClInclude Include="..\include\loader\texture_load.h" />
+    <ClInclude Include="..\include\renderer\animation.h" />
     <ClInclude Include="..\include\renderer\denoiser.h" />
+    <ClInclude Include="..\include\renderer\material.h" />
+    <ClInclude Include="..\include\renderer\renderer.h" />
+    <ClInclude Include="..\include\renderer\render_option.h" />
+    <ClInclude Include="..\include\renderer\scene.h" />
+    <ClInclude Include="..\include\renderer\texture.h" />
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h" />
     <None Include="C:\Users\PC\Documents\Optix\build\lib\ptx\$(Configuration)\HenjouRenderer_generated_henjouRendererCU.cu.optixir">
     </None>

@@ -11,6 +11,28 @@
 #include <renderer/render_option.h>
 #include <spdlog/spdlog.h>
 
+bool fpsLoader(unsigned int& fps, const std::string& path) {
+	std::string filename = path;
+	try {
+		std::ifstream ifs(filename);
+
+		if (ifs.fail()) {
+			std::cout << "File " << filename << " not found" << std::endl;
+			return false;
+		}
+		std::string str;
+		while (std::getline(ifs, str)) {
+			fps = std::stoi(str);
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "Caught exception: " << e.what() << "\n";
+		return false;
+	}
+	return true;
+}
+
 //--------------------
 // json file format
 //-------------------- 
@@ -85,7 +107,7 @@ bool load_json(const std::string& filepath, RenderOption& render_option) {
 		spdlog::info("Image Directory : {}", render_option.image_directory);
 
 		spdlog::info("Render Mode Setting...");
-		
+
 		//GLTF
 		render_option.gltf_path = jsons["GLTF_file"]["gltf_filepath"];
 		render_option.gltf_name = jsons["GLTF_file"]["gltf_filename"];
@@ -103,6 +125,10 @@ bool load_json(const std::string& filepath, RenderOption& render_option) {
 		else if (mode == "Debug") {
 			render_option.render_mode = RenderMode::Debug;
 			spdlog::info("Render Mode : Debug");
+		}
+		else if (mode == "DenoiseUpScale2X") {
+			render_option.render_mode = RenderMode::DenoiseUpScale2X;
+			spdlog::info("Render Mode : Denoise Up Scale 2x");
 		}
 		else {
 			render_option.render_mode = RenderMode::Default;
@@ -134,6 +160,15 @@ bool load_json(const std::string& filepath, RenderOption& render_option) {
 		render_option.start_frame = jsons["Animation"]["start_frame"];
 		render_option.end_frame = jsons["Animation"]["end_frame"];
 		render_option.time_limit = jsons["Animation"]["time_limit"];
+
+		unsigned int loaded_fps;
+		if (fpsLoader(loaded_fps, "./fps.txt")) {
+			spdlog::info("FPS File Loaded");
+			render_option.fps = loaded_fps;
+		}
+		else {
+			spdlog::info("FPS File Not Found");
+		}
 
 		spdlog::info("FPS : {}", render_option.fps);
 		spdlog::info("Start Frame : {}", render_option.start_frame);
@@ -179,6 +214,7 @@ bool load_json(const std::string& filepath, RenderOption& render_option) {
 			std::cout << "Scene File Save " << "scene_file" + time + ".json" << std::endl;
 		}
 
+
 	}
 	catch (std::exception& e) {
 		std::cerr << "Caught exception: " << e.what() << std::endl;
@@ -187,3 +223,4 @@ bool load_json(const std::string& filepath, RenderOption& render_option) {
 
 	return true;
 }
+

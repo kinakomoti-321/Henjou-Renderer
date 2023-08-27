@@ -38,6 +38,7 @@
 enum RenderMode {
 	Default, //
 	Denoise, //Denoised image output
+	DenoiseUpScale2X, //Denoised image output and upscale 2x
 	Debug  //Position,BaseColor,Normal,Texcoord image output
 };
 

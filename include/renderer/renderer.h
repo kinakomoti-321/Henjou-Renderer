@@ -976,6 +976,7 @@ public:
 	}
 
 	bool initializeAndRender(const std::string& render_option_path) {
+
 		//Initialize
 		{
 			if (!loadRenderOption(render_option_path))
@@ -992,49 +993,60 @@ public:
 			build();
 		}
 
-		const unsigned int image_width = render_option_.image_width;
-		const unsigned int image_height = render_option_.image_height;
-
 		Log::StartLog("Render");
-		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-
-		//sutil::CUDAOutputBuffer<float4> AOV_Color(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		BufferObject AOV_Normal(image_width, image_height);
-		BufferObject AOV_Color(image_width, image_height);
-		BufferObject AOV_Albedo(image_width, image_height);
-		BufferObject AOV_Output(image_width, image_height);
 
 		CUstream stream;
 		CUDA_CHECK(cudaStreamCreate(&stream));
-
-		sutil::Camera cam;
-		configureCamera(cam, render_option_.image_width, render_option_.image_height);
 
 		Params params;
 		CUdeviceptr d_param;
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
 
-
 		std::string data = "";
 		if (render_option_.use_date) {
 			data = "data";
 		}
+		
+		//Image Scale Setting
+		unsigned int input_image_width = render_option_.image_width;
+		unsigned int input_image_height = render_option_.image_height;
+
+		unsigned int output_image_height = render_option_.image_height;
+		unsigned int output_image_width = render_option_.image_width;
+
+		if (render_option_.render_mode == RenderMode::DenoiseUpScale2X) {
+			input_image_width = render_option_.image_width / 2U;
+			input_image_height = render_option_.image_height / 2U;
+		}
+
+		//Buffers
+		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, input_image_width, input_image_height);
+		BufferObject AOV_Normal(input_image_width, input_image_height);
+		BufferObject AOV_Color(input_image_width, input_image_height);
+		BufferObject AOV_Albedo(input_image_width, input_image_height);
+		BufferObject AOV_Output(output_image_width, output_image_height);
+		
+		//Denoiser
+		DenoiseType denoise_type = DenoiseType::NONE;
+		if (render_option_.render_mode == RenderMode::DenoiseUpScale2X) {
+			denoise_type = DenoiseType::UPSCALE2X;
+		}
+
+		OptixDenoiserManager denosier_manager(
+			input_image_width, input_image_height,
+			output_image_width, output_image_height,
+			optix_context_, stream, denoise_type);
 
 		Timer rendering_timer;
 		rendering_timer.Start();
 		spdlog::info("Animation Rendering Start");
 
-		OptixDenoiserManager denosier_manager(
-			image_width, image_height,
-			image_width, image_height,
-			optix_context_, stream, DenoiseType::NONE);
-
 		for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
 		{
 			float time = frame / float(render_option_.fps);
 			unsigned int spp = render_option_.max_spp;
-			std::cout << time << std::endl;
-
+			
+			//IAS Update
 			spdlog::info("IAS Update Start");
 			updateIASMatrix(time);
 			spdlog::info("IAS Update Finished");
@@ -1045,8 +1057,12 @@ public:
 			float3 camera_up;
 			float3 camera_right;
 			float camera_f;
+
+			//Rendering
 			{
+				//Camera Update
 				camera_f = 2.0 / std::tan(render_option_.camera_fov);
+
 				if (render_option_.camera_animation_id != -1 && render_option_.allow_camera_animation) {
 					auto& anim = scene_data_.animations[render_option_.camera_animation_id];
 					Affine4x4 affine_pos = anim.getAnimationAffine(time);
@@ -1060,10 +1076,6 @@ public:
 					camera_dir = make_float3(trans_camera_dir);
 					camera_up = make_float3(trans_camera_up);
 					camera_right = normalize(cross(camera_dir, camera_up));
-
-					std::cout << "Camera Dir" << camera_dir << std::endl;
-					std::cout << "Camera Up" << camera_up << std::endl;
-					std::cout << "Camera Right" << camera_right << std::endl;
 				}
 				else {
 					camera_pos = render_option_.camera_position;
@@ -1076,38 +1088,51 @@ public:
 
 			spdlog::info("Camera Update Finished");
 
+			//Image infomation
 			params.image = output_buffer.map();
-			params.image_width = render_option_.image_width;
-			params.image_height = render_option_.image_height;
-			params.traversal_handle = ias_handle_;
+			params.image_width = input_image_width;
+			params.image_height = input_image_height;
 
+			//Traversal Handle
+			params.traversal_handle = ias_handle_;
+			
+			//Sample
 			params.spp = spp;
 			params.frame = frame;
-
+			
+			//Camera
 			params.camera_pos = camera_pos;
 			params.camera_dir = camera_dir;
 			params.camera_up = camera_up;
 			params.camera_right = camera_right;
 			params.camera_f = camera_f;
 
+			//Primitive Information
 			params.vertices = reinterpret_cast<float3*>(vertices_buffer_.device_ptr);
 			params.indices = reinterpret_cast<unsigned int*>(indices_buffer_.device_ptr);
 			params.normals = reinterpret_cast<float3*>(normals_buffer_.device_ptr);
 			params.texcoords = reinterpret_cast<float2*>(texcoords_buffer_.device_ptr);
 			params.colors = reinterpret_cast<float3*>(colors_buffer_.device_ptr);
 			params.prim_offsets = reinterpret_cast<unsigned int*>(prim_offset_buffer_.device_ptr);
+
+			//IAS Information
 			params.transforms = reinterpret_cast<Matrix4x3*> (transform_matrices_buffer_.device_ptr);
 			params.inv_transforms = reinterpret_cast<Matrix4x3*> (inv_transform_matrices_buffer_.device_ptr);
+			params.instance_count = scene_data_.instances.size();
+
+			//Textures
 			params.textures = reinterpret_cast<cudaTextureObject_t*>(d_texture_objects_.device_ptr);
 
+			//IBL
 			params.ibl_texture = ibl_texture_object_;
 			params.ibl_intensity = render_option_.IBL_intensity;
 
+			//Light Information
 			params.light_prim_ids = reinterpret_cast<unsigned int*>(light_prim_ids_buffer_.device_ptr);
 			params.light_prim_count = scene_data_.light_prim_ids.size();
 			params.light_prim_emission = reinterpret_cast<float3*>(light_prim_emission_buffer_.device_ptr);
-			params.instance_count = scene_data_.instances.size();
-
+			
+			//Raytype
 			params.RAYTYPE = RAYTYPE_;
 
 			//AOV
@@ -1124,43 +1149,55 @@ public:
 			Timer timer;
 			timer.Start();
 			spdlog::info("Start render frame {}", frame);
-			OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
+			spdlog::info("Render Info: Image width,height ({},{})", input_image_width, input_image_height);
+			spdlog::info("Render Info: Spp {}", params.spp);
+			spdlog::info("Render Info: Frame {}", params.frame);
+			OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, input_image_width, input_image_height, /*depth=*/1));
 			CUDA_SYNC_CHECK();
-
-			//Denoiser
-
-			denosier_manager.layerSet(
-				reinterpret_cast<float4*>(AOV_Albedo.d_gpu_buffer),
-				reinterpret_cast<float4*>(AOV_Normal.d_gpu_buffer),
-				reinterpret_cast<float4*>(AOV_Color.d_gpu_buffer),
-				reinterpret_cast<float4*>(AOV_Output.d_gpu_buffer)
-			);
-
-			denosier_manager.denoise();
-			CUDA_SYNC_CHECK();
-
+			
 			timer.Stop();
-			spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
+			spdlog::info("End render frame{} : {}s", frame, timer.getTimeS());
+
+			Timer denoiseTimer;
+			denoiseTimer.Start();
+			//Denoise
+			spdlog::info("Denoising...");
+			spdlog::info("Output Resolution : {}x{}", output_image_width, output_image_height);
+			{
+				denosier_manager.layerSet(
+					reinterpret_cast<float4*>(AOV_Albedo.d_gpu_buffer),
+					reinterpret_cast<float4*>(AOV_Normal.d_gpu_buffer),
+					reinterpret_cast<float4*>(AOV_Color.d_gpu_buffer),
+					reinterpret_cast<float4*>(AOV_Output.d_gpu_buffer)
+				);
+
+				denosier_manager.denoise();
+				CUDA_SYNC_CHECK();
+			}
+			denoiseTimer.Stop();
+			spdlog::info("Denoise Finished! : {} ms", denoiseTimer.getTimeMS());
+			
+			//Output
+			spdlog::info("Export png");
+			{
+				output_buffer.unmap();
+				std::vector<uchar4> bufuchar(output_image_width * output_image_height);
+				AOV_Output.cpyGPUBufferToHost();
+
+				float4ConvertColor(AOV_Output.buffer, bufuchar.data(), output_image_width, output_image_height);
+
+				sutil::ImageBuffer buffer;
+				buffer.data = bufuchar.data();
+				buffer.width = output_image_width;
+				buffer.height = output_image_height;
+				buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
+				std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
+				sutil::saveImage(imagename.c_str(), buffer, false);
+			}
+
 			rendering_timer.Stop();
-			spdlog::info("Total Elapsed time {} ms", rendering_timer.getTimeS());
-
-			output_buffer.unmap();
-
-			std::vector<uchar4> bufuchar(image_width * image_height);
-			AOV_Output.cpyGPUBufferToHost();
-			AOV_Normal.cpyGPUBufferToHost();
-			//for (int i = 0; i < image_width * image_height; i++) {
-			//	std::cout << AOV_Output.getHostPointer()[i] << std::endl;
-			//}
-			float4ConvertColor(AOV_Output.buffer, bufuchar.data(), image_width, image_height);
-
-			sutil::ImageBuffer buffer;
-			buffer.data = bufuchar.data();
-			buffer.width = render_option_.image_width;
-			buffer.height = render_option_.image_height;
-			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
-			std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
-			sutil::saveImage(imagename.c_str(), buffer, false);
+			spdlog::info("Frame {} Rendering Finished", params.frame);
+			spdlog::info("Total Elapsed time {} s", rendering_timer.getTimeS());
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
