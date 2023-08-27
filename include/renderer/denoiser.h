@@ -55,15 +55,13 @@ private:
 	float4* normal;
 	float4* input;
 	float4* output;
-	float4* previous;
-	float2* flow;
 
 	DenoiseType denoise_type = NONE;
 
 public:
 
 	OptixDenoiserManager(const unsigned int& width, const unsigned int& height,
-		OptixDeviceContext context, CUstream cu_stream, DenoiseType denoise_type) : width(width), height(height), context(context), cu_stream(cu_stream), denoise_type(denoise_type) {
+		OptixDeviceContext context, CUstream& cu_stream, DenoiseType denoise_type) : width(width), height(height), context(context), cu_stream(cu_stream), denoise_type(denoise_type) {
 
 		OptixDenoiserOptions options;
 		options.guideAlbedo = 1;
@@ -73,7 +71,7 @@ public:
 		switch (denoise_type)
 		{
 		case NONE:
-			model_kind = OPTIX_DENOISER_MODEL_KIND_LDR;
+			model_kind = OPTIX_DENOISER_MODEL_KIND_HDR;
 			break;
 		case TEMPORAL:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_TEMPORAL;
@@ -128,31 +126,26 @@ public:
 		}
 	}
 
-	void layerSet(float4* in_albedo, float4* in_normal, float2* in_flow, float4* in_input, float4* in_output, float4* in_previous) {
+	void layerSet(float4* in_albedo, float4* in_normal, float4* in_input, float4* in_output) {
 		albedo = in_albedo;
 		normal = in_normal;
-		flow = in_flow;
 		input = in_input;
 		output = in_output;
-		previous = in_previous;
 	}
 
 	void denoise() {
 		OptixDenoiserGuideLayer guidelayer;
 		guidelayer.albedo = createOptixImage2D(width, height, albedo);
 		guidelayer.normal = createOptixImage2D(width, height, normal);
-		//guidelayer.flow = createOptixImage2D(width, height, flow);
 
 		OptixDenoiserLayer layers;
 		layers.input = createOptixImage2D(width, height, input);
-		//layers.previousOutput = createOptixImage2D(width, height, previous);
 		layers.output = createOptixImage2D(width, height, output);
 
 		OptixDenoiserParams param;
-		param.denoiseAlpha = OPTIX_DENOISER_ALPHA_MODE_COPY;
-		param.blendFactor = 0;
-		param.hdrAverageColor = 0;
-		param.hdrIntensity = 0;
+		param.blendFactor = 0.0f;
+		param.hdrIntensity = reinterpret_cast<CUdeviceptr>(nullptr);
+		param.hdrAverageColor = reinterpret_cast<CUdeviceptr>(nullptr);
 
 		OPTIX_CHECK(optixDenoiserInvoke(
 			denoiser,

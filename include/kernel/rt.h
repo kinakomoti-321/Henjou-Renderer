@@ -77,7 +77,7 @@ __device__ struct Ray {
 };
 
 
-__device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJState state) {
+__device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
 	float russian_p = 1.0;
@@ -87,7 +87,7 @@ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJ
 	ray.origin = firstRayOrigin;
 	ray.direction = firstRayDirection;
 
-	for (int i = 0; i < MaxDepth; i++) {
+	for (int depth = 0; depth < MaxDepth; depth++) {
 		russian_p = fmaxf(throughput.x, fmaxf(throughput.y, throughput.z));
 
 		if (russian_p < cmj_1d(state)) {
@@ -104,6 +104,11 @@ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJ
 			1e16f,               // Max intersection distance
 			&prd
 		);
+
+		if (depth == 0) {
+			aov_albedo = prd.basecolor;
+			aov_normal = prd.normal;
+		}
 
 		if (!prd.is_hit) {
 			LTE += throughput * prd.emission;

@@ -100,6 +100,41 @@ void float4ConvertColor(float4* data, uchar4* color, unsigned int width, unsigne
 	}
 }
 
+struct BufferObject {
+	float4* buffer;
+	unsigned int width;
+	unsigned int height;
+	CUdeviceptr d_gpu_buffer = 0;
+
+	BufferObject(unsigned int in_width, unsigned int in_height) {
+		width = in_width;
+		height = in_height;
+
+		buffer = new float4[in_width * in_height];
+
+		const size_t buffer_size = sizeof(float4) * in_width * in_height;
+		CUDA_CHECK(cudaMalloc(
+			reinterpret_cast<void**>(&d_gpu_buffer),
+			buffer_size
+		));
+	}
+
+	~BufferObject() {
+		delete[] buffer;
+		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_gpu_buffer)));
+	}
+
+	void cpyGPUBufferToHost() {
+		const size_t buffer_size = sizeof(float4) * width * height;
+		CUDA_CHECK(cudaMemcpy(
+			buffer,
+			reinterpret_cast<void*>(d_gpu_buffer),
+			buffer_size,
+			cudaMemcpyDeviceToHost
+		));
+	}
+};
+
 class Renderer {
 private:
 	RenderOption render_option_;
@@ -259,10 +294,10 @@ private:
 		OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &optix_context_));
 
 
-		
+
 		size_t heap_size = 65536;
 		CUDA_CHECK(cudaDeviceSetLimit(cudaLimitStackSize, heap_size));
-		CUDA_CHECK(cudaDeviceGetLimit(&heap_size,cudaLimitMallocHeapSize));
+		CUDA_CHECK(cudaDeviceGetLimit(&heap_size, cudaLimitMallocHeapSize));
 		spdlog::info("heap size : {:16d}", heap_size);
 		spdlog::info("Optix Device Context Initialize");
 	}
@@ -755,7 +790,7 @@ private:
 	void setSky() {
 		Log::DebugLog("IBL texture Load");
 		if (render_option_.use_IBL) {
-			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.IBL_path,render_option_.scene_sky_default);
+			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.IBL_path, render_option_.scene_sky_default);
 		}
 		else {
 			hdrtexture_ = std::make_shared<HDRTexture>(render_option_.scene_sky_default);
@@ -956,15 +991,17 @@ public:
 			build();
 		}
 
+		const unsigned int image_width = render_option_.image_width;
+		const unsigned int image_height = render_option_.image_height;
+
 		Log::StartLog("Render");
 		sutil::CUDAOutputBuffer<uchar4> output_buffer(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
 
-		sutil::CUDAOutputBuffer<float4> AOV_Color(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		sutil::CUDAOutputBuffer<float4> AOV_Albedo(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		sutil::CUDAOutputBuffer<float4> AOV_Normal(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		sutil::CUDAOutputBuffer<float2> AOV_Flow(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		sutil::CUDAOutputBuffer<float4> AOV_Output(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
-		sutil::CUDAOutputBuffer<float4> AOV_PreOutput(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		//sutil::CUDAOutputBuffer<float4> AOV_Color(sutil::CUDAOutputBufferType::CUDA_DEVICE, render_option_.image_width, render_option_.image_height);
+		BufferObject AOV_Normal(image_width, image_height);
+		BufferObject AOV_Color(image_width, image_height);
+		BufferObject AOV_Albedo(image_width, image_height);
+		BufferObject AOV_Output(image_width, image_height);
 
 		CUstream stream;
 		CUDA_CHECK(cudaStreamCreate(&stream));
@@ -976,8 +1013,6 @@ public:
 		CUdeviceptr d_param;
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_param), sizeof(Params)));
 
-		const unsigned int image_width = render_option_.image_width;
-		const unsigned int image_height = render_option_.image_height;
 
 		std::string data = "";
 		if (render_option_.use_date) {
@@ -988,7 +1023,7 @@ public:
 		rendering_timer.Start();
 		spdlog::info("Animation Rendering Start");
 
-		OptixDenoiserManager denosier_manager(image_width, image_height, optix_context_, stream,DenoiseType::NONE);
+		OptixDenoiserManager denosier_manager(image_width, image_height, optix_context_, stream, DenoiseType::NONE);
 
 		for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
 		{
@@ -1072,10 +1107,9 @@ public:
 			params.RAYTYPE = RAYTYPE_;
 
 			//AOV
-			params.aov_albedo = reinterpret_cast<float4*>(AOV_Albedo.map());
-			params.aov_color = reinterpret_cast<float4*>(AOV_Color.map());
-			params.aov_normal = reinterpret_cast<float4*>(AOV_Normal.map());
-			params.aov_flow = reinterpret_cast<float4*>(AOV_Flow.map());
+			params.aov_albedo = reinterpret_cast<float4*>(AOV_Albedo.d_gpu_buffer);
+			params.aov_color = reinterpret_cast<float4*>(AOV_Color.d_gpu_buffer);
+			params.aov_normal = reinterpret_cast<float4*>(AOV_Normal.d_gpu_buffer);
 
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(d_param),
@@ -1088,21 +1122,18 @@ public:
 			spdlog::info("Start render frame {}", frame);
 			OPTIX_CHECK(optixLaunch(optix_pipeline_, stream, d_param, sizeof(Params), &optix_sbt_, render_option_.image_width, render_option_.image_height, /*depth=*/1));
 			CUDA_SYNC_CHECK();
-			
-			//Denoiser
-			{
-				denosier_manager.layerSet(
-					reinterpret_cast<float4*>(AOV_Albedo.map()),
-					reinterpret_cast<float4*>(AOV_Normal.map()),
-					reinterpret_cast<float2*>(AOV_Flow.map()),
-					reinterpret_cast<float4*>(AOV_Color.map()),
-					reinterpret_cast<float4*>(AOV_Output.map()),
-					reinterpret_cast<float4*>(AOV_PreOutput.map())
-				);
 
-				denosier_manager.denoise();
-				CUDA_SYNC_CHECK();
-			}
+			//Denoiser
+
+			denosier_manager.layerSet(
+				reinterpret_cast<float4*>(AOV_Albedo.d_gpu_buffer),
+				reinterpret_cast<float4*>(AOV_Normal.d_gpu_buffer),
+				reinterpret_cast<float4*>(AOV_Color.d_gpu_buffer),
+				reinterpret_cast<float4*>(AOV_Output.d_gpu_buffer)
+			);
+
+			denosier_manager.denoise();
+			CUDA_SYNC_CHECK();
 
 			timer.Stop();
 			spdlog::info("End render frame{} : {}ms", frame, timer.getTimeS());
@@ -1111,13 +1142,16 @@ public:
 
 			output_buffer.unmap();
 
-			std::vector<uchar4> bufuchar(image_width* image_height);
-			AOV_Output.unmap();
+			std::vector<uchar4> bufuchar(image_width * image_height);
+			AOV_Output.cpyGPUBufferToHost();
+			AOV_Normal.cpyGPUBufferToHost();
+			//for (int i = 0; i < image_width * image_height; i++) {
+			//	std::cout << AOV_Output.getHostPointer()[i] << std::endl;
+			//}
+			float4ConvertColor(AOV_Output.buffer, bufuchar.data(), image_width, image_height);
 
-			float4ConvertColor(AOV_Output.getHostPointer(), bufuchar.data(), image_width, image_height);
-			
 			sutil::ImageBuffer buffer;
-			buffer.data = output_buffer.getHostPointer();
+			buffer.data = bufuchar.data();
 			buffer.width = render_option_.image_width;
 			buffer.height = render_option_.image_height;
 			buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
