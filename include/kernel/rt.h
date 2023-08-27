@@ -77,7 +77,7 @@ __device__ struct Ray {
 };
 
 
-__device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
+__forceinline__ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
 	float russian_p = 1.0;
@@ -150,7 +150,7 @@ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJ
 }
 
 
-__device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDirection, CMJState state) {
+__forceinline__ __device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
 	float russian_p = 1.0;
@@ -178,6 +178,11 @@ __device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDirection, CMJState 
 			1e16f,               // Max intersection distance
 			&prd
 		);
+
+		if (depth == 0) {
+			aov_albedo = prd.basecolor;
+			aov_normal = prd.normal;
+		}
 
 		if (!prd.is_hit) {
 			if (depth == 0) {
@@ -266,7 +271,7 @@ __device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDirection, CMJState 
 	return LTE;
 }
 
-__device__ float3 MIS(float3 firstRayOrigin, float3 firstRayDirection, CMJState state) {
+__forceinline__ __device__ float3 MIS(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
 	float russian_p = 1.0;
@@ -294,6 +299,11 @@ __device__ float3 MIS(float3 firstRayOrigin, float3 firstRayDirection, CMJState 
 			1e16f,               // Max intersection distance
 			&prd
 		);
+
+		if (depth == 0) {
+			aov_albedo = prd.basecolor;
+			aov_normal = prd.normal;
+		}
 
 		if (!prd.is_hit) {
 			if (depth == 0) {

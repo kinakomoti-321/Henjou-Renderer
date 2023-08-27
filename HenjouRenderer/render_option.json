@@ -4,7 +4,7 @@
         "image_height" : 700,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 100
+        "max_spp" : 20
     },
 
     "Render_mode" : "Default",

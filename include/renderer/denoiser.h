@@ -34,7 +34,8 @@ static OptixImage2D createOptixImage2D(unsigned int width, unsigned int height, 
 
 enum DenoiseType {
 	NONE,
-	TEMPORAL
+	TEMPORAL,
+	UPSCALE2X,
 };
 
 class OptixDenoiserManager {
@@ -48,8 +49,10 @@ private:
 	CUdeviceptr m_state = 0;
 	uint32_t m_state_size = 0;
 
-	unsigned int width = 0;
-	unsigned int height = 0;
+	unsigned int in_width_ = 0;
+	unsigned int in_height_ = 0;
+	unsigned int out_width_ = 0; 
+	unsigned int out_height_ = 0;
 
 	float4* albedo;
 	float4* normal;
@@ -60,14 +63,20 @@ private:
 
 public:
 
-	OptixDenoiserManager(const unsigned int& width, const unsigned int& height,
-		OptixDeviceContext context, CUstream& cu_stream, DenoiseType denoise_type) : width(width), height(height), context(context), cu_stream(cu_stream), denoise_type(denoise_type) {
+	OptixDenoiserManager(const unsigned int& in_width, const unsigned int& in_height, const unsigned int& out_width,const unsigned int& out_height,
+		OptixDeviceContext context, CUstream& cu_stream, DenoiseType denoise_type) : context(context), cu_stream(cu_stream), denoise_type(denoise_type) {
 
 		OptixDenoiserOptions options;
 		options.guideAlbedo = 1;
 		options.guideNormal = 1;
 
 		OptixDenoiserModelKind model_kind;
+		in_width_ = in_width;
+		in_height_ = in_height;
+
+		out_width_ = in_width_;
+		out_height_ = in_height_;
+
 		switch (denoise_type)
 		{
 		case NONE:
@@ -75,6 +84,9 @@ public:
 			break;
 		case TEMPORAL:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_TEMPORAL;
+			break;
+		case UPSCALE2X:
+			model_kind = OPTIX_DENOISER_MODEL_KIND_UPSCALE2X;
 			break;
 		default:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_LDR;
@@ -95,8 +107,8 @@ public:
 			OptixDenoiserSizes denoiser_size;
 			OPTIX_CHECK(optixDenoiserComputeMemoryResources(
 				denoiser,
-				width,
-				height,
+				out_width_,
+				out_height_,
 				&denoiser_size
 			));
 
@@ -116,8 +128,8 @@ public:
 			OPTIX_CHECK(optixDenoiserSetup(
 				denoiser,
 				cu_stream,
-				width,
-				height,
+				in_width,
+				in_height,
 				m_state,
 				m_state_size,
 				m_scratch,
@@ -135,12 +147,12 @@ public:
 
 	void denoise() {
 		OptixDenoiserGuideLayer guidelayer;
-		guidelayer.albedo = createOptixImage2D(width, height, albedo);
-		guidelayer.normal = createOptixImage2D(width, height, normal);
+		guidelayer.albedo = createOptixImage2D(in_width_, in_height_, albedo);
+		guidelayer.normal = createOptixImage2D(in_width_, in_height_, normal);
 
 		OptixDenoiserLayer layers;
-		layers.input = createOptixImage2D(width, height, input);
-		layers.output = createOptixImage2D(width, height, output);
+		layers.input = createOptixImage2D(in_width_, in_height_, input);
+		layers.output = createOptixImage2D(out_width_, out_height_, output);
 
 		OptixDenoiserParams param;
 		param.blendFactor = 0.0f;

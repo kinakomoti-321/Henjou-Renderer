@@ -1023,7 +1023,10 @@ public:
 		rendering_timer.Start();
 		spdlog::info("Animation Rendering Start");
 
-		OptixDenoiserManager denosier_manager(image_width, image_height, optix_context_, stream, DenoiseType::NONE);
+		OptixDenoiserManager denosier_manager(
+			image_width, image_height,
+			image_width, image_height,
+			optix_context_, stream, DenoiseType::NONE);
 
 		for (int frame = render_option_.start_frame; frame < render_option_.end_frame; frame++)
 		{
