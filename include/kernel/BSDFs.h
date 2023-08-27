@@ -486,8 +486,8 @@ private:
 	float ior;
 	float transmission;
 
-	Lambert lam;
-	GGX ggx;
+	//Lambert lam;
+	//GGX ggx;
 	MetaMaterialGlass idealglass;
 
 	DisneyBRDF disney;
@@ -506,8 +506,8 @@ public:
 	__device__ BSDF(const Payload& pyload) {
 		basecolor = pyload.basecolor;
 		metallic = pyload.metallic;
-		lam = Lambert(basecolor);
-		ggx = GGX(basecolor, 0.1f);
+		//lam = Lambert(basecolor);
+		//ggx = GGX(basecolor, 0.1f);
 		ior = 1.5;
 		idealglass = MetaMaterialGlass(make_float3(1.0), ior);
 		disney = DisneyBRDF(pyload);

@@ -21,7 +21,7 @@ private:
 	float m_clearcoatAlpha;
 
 	//Cosine Importance Sampling
-	__device__ float3 sampleDiffuse(const float2& uv, float& pdf) {
+	__forceinline__ __device__ float3 sampleDiffuse(const float2& uv, float& pdf) {
 		float theta = 0.5 * acos(1 - 2.0 * uv.x);
 		float phi = 2 * M_PIf * uv.y;
 		float cosTheta = cos(theta);
@@ -31,31 +31,31 @@ private:
 		return wi;
 	}
 
-	__device__ float getPDFDiffuse(const float3& wi) {
+	__forceinline__ __device__ float getPDFDiffuse(const float3& wi) {
 		return fabsf(wi.y) * INV_PI;
 	}
 
-	__device__ float GGX_D(const float3& wm) {
+	__forceinline__ __device__ float GGX_D(const float3& wm) {
 		float term1 = wm.x * wm.x / (m_alpha * m_alpha) + wm.z * wm.z / (m_alpha * m_alpha) + wm.y * wm.y;
 		float term2 = PI * m_alpha * m_alpha * term1 * term1;
 		return 1.0f / term2;
 	}
 
-	__device__ float GGX_G1(const float3& w) {
+	__forceinline__ __device__ float GGX_G1(const float3& w) {
 		return 1.0f / (1.0f + GGX_Lambda(w));
 	}
 
-	__device__ float GGX_G2_HeightCorrelated(const float3& wi, const float3& wo) {
+	__forceinline__ __device__ float GGX_G2_HeightCorrelated(const float3& wi, const float3& wo) {
 		return 1.0f / (1.0f + GGX_Lambda(wi) + GGX_Lambda(wo));
 	}
 
-	__device__ float GGX_Lambda(const float3& w) {
+	__forceinline__ __device__ float GGX_Lambda(const float3& w) {
 		float delta = 1.0f + (m_alpha * m_alpha * w.x * w.x + m_alpha * m_alpha * w.z * w.z) / (w.y * w.y);
 		return (-1.0 + sqrtf(delta)) * 0.5f;
 	}
 
 	//https://arxiv.org/pdf/2306.05044.pdf
-	__device__ float3 sampleVisibleNormal(float2 uv, float3 wo) {
+	__forceinline__ __device__ float3 sampleVisibleNormal(const float2& uv, const float3& wo) {
 		float3 strech_wo = normalize(make_float3(wo.x * m_alpha, wo.y, wo.z * m_alpha));
 
 		float phi = 2.0f * PI * uv.x;
@@ -73,18 +73,18 @@ private:
 		return wm;
 	}
 
-	__device__ float3 sampleSpecular(const float2& uv, const float3& wo, float& pdf) {
+	__forceinline__ __device__ float3 sampleSpecular(const float2& uv, const float3& wo, float& pdf) {
 		float3 wm = sampleVisibleNormal(uv, wo);
 		pdf = getPDFSpecular(wm, wo);
 		return wm;
 	}
 
-	__device__ float getPDFSpecular(const float3& wm, const float3& wo) {
+	__forceinline__ __device__ float getPDFSpecular(const float3& wm, const float3& wo) {
 		return 0.25f * GGX_D(wm) * GGX_G1(wo) * absdot(wo, wm) / (absdot(wm, wo) * fabsf(wo.y));
 	}
 
 
-	__device__ float3 sampleClearcoat(const float2& uv, const float3& wo, float& pdf) {
+	__forceinline__ __device__ float3 sampleClearcoat(const float2& uv, const float3& wo, float& pdf) {
 		float cosineTheta = sqrtf(fmaxf((1.0f - powf(m_clearcoatAlpha * m_clearcoatAlpha, 1.0f - uv.x)) / (1.0f - m_clearcoatAlpha * m_clearcoatAlpha), 0.0f));
 		float sinTheta = sqrtf(fmaxf(1.0f - cosineTheta * cosineTheta, 0.0f));
 		float phi = PI2 * uv.y;
@@ -93,17 +93,17 @@ private:
 		return wm;
 	}
 
-	__device__ float getPDFClearcoat(const float3& wm, const float3& wo) {
+	__forceinline__ __device__ float getPDFClearcoat(const float3& wm, const float3& wo) {
 		return clearcoat_D(wm, m_clearcoatAlpha) * fabsf(wm.y) / (4.0f * fabsf(dot(wm, wo)));
 	}
 
-	__device__ float f_tSchlick(float wn, float F90) {
+	__forceinline__ __device__ float f_tSchlick(float wn, float F90) {
 		float delta = fmaxf(1.0 - wn, 0.0);
 		return 1.0 + (F90 - 1.0) * delta * delta * delta * delta * delta;
 	}
 
 	//Specular
-	__device__ float3 specular(const float3& wo, const float3& wi, const float3& F0) {
+	__forceinline__ __device__ float3 specular(const float3& wo, const float3& wi, const float3& F0) {
 		float3 wm = normalize(wo + wi);
 
 		float ggxD = GGX_D(wm);
@@ -113,16 +113,16 @@ private:
 		return 0.25f * ggxF * ggxD * ggxG / (fabsf(wo.y) * fabsf(wi.y));
 	}
 
-	__device__ float clearcoat_G2_HeightCorrelated(const float3& wi, const float3& wo, const float alpha) {
+	__forceinline__ __device__ float clearcoat_G2_HeightCorrelated(const float3& wi, const float3& wo, const float& alpha) {
 		return 1.0f / (1.0f + clearcoat_Lambda(wi, alpha) + clearcoat_Lambda(wo, alpha));
 	}
 
-	__device__ float clearcoat_Lambda(const float3& w, const float alpha) {
+	__forceinline__ __device__ float clearcoat_Lambda(const float3& w, const float& alpha) {
 		float term1 = 1.0f + (alpha * alpha * w.x * w.x + alpha * alpha * w.z * w.z) / (w.y * w.y);
 		return 0.5f * (-1.0f + sqrtf(term1));
 	}
 
-	__device__ float clearcoat_D(const float3& wm, const float alpha) {
+	__forceinline__ __device__ float clearcoat_D(const float3& wm, const float& alpha) {
 		//const float cosine_wm = fabsf(wm.y);
 		//const float term1 = PI * logf(alpha * alpha) * (1.0f + (cosine_wm * cosine_wm) * (alpha * alpha - 1.0f));
 		//return (alpha * alpha - 1.0) / term1;
@@ -133,7 +133,7 @@ private:
 	}
 
 	//Clearcoat
-	__device__ float3 clearcoat(const float3& wo, const float3& wi, const float clearcoat_alpha) {
+	__forceinline__ __device__ float3 clearcoat(const float3& wo, const float3& wi, const float clearcoat_alpha) {
 		const float3 wm = normalize(wo + wi);
 
 		float clearcoatD = clearcoat_D(wm, clearcoat_alpha);

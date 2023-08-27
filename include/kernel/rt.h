@@ -271,7 +271,7 @@ __forceinline__ __device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDire
 	return LTE;
 }
 
-__forceinline__ __device__ float3 MIS(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
+__forceinline__ __device__ float3 MIS(const float3& firstRayOrigin,const float3& firstRayDirection, CMJState& state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
 	float russian_p = 1.0;
