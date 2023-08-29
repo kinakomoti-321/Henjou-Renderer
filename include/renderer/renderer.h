@@ -1270,7 +1270,18 @@ public:
 				buffer.width = output_image_width;
 				buffer.height = output_image_height;
 				buffer.pixel_format = sutil::BufferImageFormat::UNSIGNED_BYTE4;
-				std::string imagename = render_option_.image_name + "_" + data + "_" + std::to_string(frame) + ".png";
+
+				std::string str_frame = std::to_string(frame);
+				if (str_frame.size() < 2) {
+					str_frame = "00" + str_frame;
+				}
+				else if (str_frame.size() < 3) {
+					str_frame = "0" + str_frame;
+				}
+
+				//–{”ÔŽd—l
+				std::string imagename = str_frame + ".png";
+				//std::string imagename = render_option_.image_name + "_" + str_frame + ".png";
 				sutil::saveImage(imagename.c_str(), buffer, false);
 			}
 

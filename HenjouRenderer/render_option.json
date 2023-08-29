@@ -4,7 +4,7 @@
         "image_height" : 720,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 10
+        "max_spp" : 15
     },
 
     "Render_mode" : "Default",
@@ -22,13 +22,13 @@
     },
 
     "PTX_File":{
-        "ptxfile_path" : "../lib/ptx/Debug/HenjouRenderer_generated_henjouRendererCU.cu.optixir"
+        "ptxfile_path" : "../lib/ptx/Release/HenjouRenderer_generated_henjouRendererCU.cu.optixir"
     },
 
     "Animation" : {
         "fps" : 24,
-        "start_frame": 39,
-        "end_frame" : 40,
+        "start_frame": 59,
+        "end_frame" : 60,
         "time_limit" : 3.0
     },
 

@@ -492,7 +492,7 @@ public:
 
 	__device__ BSDF(const Payload& pyload) {
 		is_specular = pyload.is_specular;
-		float ior = 1.5;
+		float ior = pyload.ior;
 		idealglass = MetaMaterialGlass(make_float3(1.0), ior);
 		disney = DisneyBRDF(pyload);
 	}
