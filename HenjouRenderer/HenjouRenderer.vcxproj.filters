@@ -9,34 +9,10 @@
     <ClInclude Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\kernel\BSDFs.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\cmj.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\color.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\disneyBRDF.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\light_sample.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\math.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\Payload.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\kernel\rt.h">
+    <ClInclude Include="..\include\renderer\animation.h">
       <Filter>CUDA Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\renderer\denoiser.h">
-      <Filter>CUDA Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\renderer\animation.h">
       <Filter>CUDA Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\renderer\material.h">
@@ -69,6 +45,30 @@
     <ClInclude Include="..\include\loader\texture_load.h">
       <Filter>CUDA Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\kernel\BSDFs.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\cmj.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\color.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\disneyBRDF.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\light_sample.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\math.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\Payload.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\kernel\rt.h">
+      <Filter>CUDA Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\PC\Documents\Optix\SDK\HenjouRenderer\henjouRendererCU.cu">
@@ -93,9 +93,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{22B1E3DF-EAF9-3567-A50F-FA1DBE29F013}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CUDA Files\NewFilter1">
-      <UniqueIdentifier>{79ad5036-4983-4b4b-af0e-d975c07e28de}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -4,7 +4,8 @@
 		"version":"2.0"
 	},
 	"extensionsUsed":[
-		"KHR_materials_emissive_strength"
+		"KHR_materials_emissive_strength",
+		"KHR_materials_transmission"
 	],
 	"scene":0,
 	"scenes":[
@@ -48,9 +49,14 @@
 				0,
 				0
 			],
+			"scale":[
+				-0.2372220754623413,
+				-0.014170405454933643,
+				-0.23346999287605286
+			],
 			"translation":[
 				0,
-				0.9852662086486816,
+				0.9898384809494019,
 				0
 			]
 		},
@@ -186,7 +192,7 @@
 			],
 			"extensions":{
 				"KHR_materials_emissive_strength":{
-					"emissiveStrength":5
+					"emissiveStrength":10
 				}
 			},
 			"name":"Material.004",
@@ -197,6 +203,11 @@
 		},
 		{
 			"doubleSided":true,
+			"extensions":{
+				"KHR_materials_transmission":{
+					"transmissionFactor":1
+				}
+			},
 			"name":"Material.008",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
@@ -205,7 +216,7 @@
 					0.800000011920929,
 					1
 				],
-				"roughnessFactor":0.10000000149011612
+				"roughnessFactor":0
 			}
 		},
 		{
@@ -406,14 +417,14 @@
 			"componentType":5126,
 			"count":4,
 			"max":[
-				0.5,
-				0,
-				0.5
+				1,
+				1,
+				1
 			],
 			"min":[
-				-0.5,
-				0,
-				-0.5
+				-1,
+				1,
+				-1
 			],
 			"type":"VEC3"
 		},

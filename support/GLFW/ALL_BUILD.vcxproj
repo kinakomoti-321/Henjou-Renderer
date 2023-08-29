@@ -69,7 +69,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -79,7 +79,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -89,7 +89,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>

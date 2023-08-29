@@ -210,10 +210,10 @@ CUDA_BUILD_EMULATION:BOOL=OFF
 CUDA_CHECK_DEPENDENCIES_DURING_COMPILE:BOOL=ON
 
 //"cudart" library
-CUDA_CUDART_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cudart.lib
+CUDA_CUDART_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cudart.lib
 
 //"cuda" library (older versions only).
-CUDA_CUDA_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cuda.lib
+CUDA_CUDA_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cuda.lib
 
 //Compile CUDA source files in parallel
 CUDA_ENABLE_BATCHING:BOOL=OFF
@@ -242,7 +242,7 @@ CUDA_MIN_SM_TARGET:STRING=sm_50
 CUDA_NVASM_EXECUTABLE:FILEPATH=CUDA_NVASM_EXECUTABLE-NOTFOUND
 
 //Path to a program.
-CUDA_NVCC_EXECUTABLE:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/bin/nvcc.exe
+CUDA_NVCC_EXECUTABLE:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/bin/nvcc.exe
 
 //Semi-colon delimit multiple arguments.
 CUDA_NVCC_FLAGS:STRING=-arch;sm_50;--use_fast_math;-lineinfo;-Wno-deprecated-gpu-targets;--use-local-env
@@ -284,10 +284,10 @@ CUDA_SDK_ROOT_DIR:PATH=CUDA_SDK_ROOT_DIR-NOTFOUND
 CUDA_SEPARABLE_COMPILATION:BOOL=OFF
 
 //Path to a file.
-CUDA_TOOLKIT_INCLUDE:PATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/include
+CUDA_TOOLKIT_INCLUDE:PATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/include
 
 //Toolkit location.
-CUDA_TOOLKIT_ROOT_DIR:PATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2
+CUDA_TOOLKIT_ROOT_DIR:PATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1
 
 //Pass the '--use-local-env' option to NVCC; only applies to initial
 // configure
@@ -303,43 +303,43 @@ CUDA_USE_STATIC_CUDA_RUNTIME:BOOL=ON
 CUDA_VERBOSE_BUILD:BOOL=OFF
 
 //Version of CUDA as computed from nvcc.
-CUDA_VERSION:STRING=12.2
+CUDA_VERSION:STRING=12.1
 
 //"cublas" library
-CUDA_cublas_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cublas.lib
+CUDA_cublas_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cublas.lib
 
 //"cublas_device" library
 CUDA_cublas_device_LIBRARY:FILEPATH=CUDA_cublas_device_LIBRARY-NOTFOUND
 
 //"cudadevrt" library
-CUDA_cudadevrt_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cudadevrt.lib
+CUDA_cudadevrt_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cudadevrt.lib
 
 //static CUDA runtime library
-CUDA_cudart_static_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cudart_static.lib
+CUDA_cudart_static_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cudart_static.lib
 
 //"cufft" library
-CUDA_cufft_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cufft.lib
+CUDA_cufft_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cufft.lib
 
 //"cupti" library
-CUDA_cupti_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/extras/CUPTI/lib64/cupti.lib
+CUDA_cupti_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/extras/CUPTI/lib64/cupti.lib
 
 //"curand" library
-CUDA_curand_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/curand.lib
+CUDA_curand_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/curand.lib
 
 //"cusolver" library
-CUDA_cusolver_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cusolver.lib
+CUDA_cusolver_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cusolver.lib
 
 //"cusparse" library
-CUDA_cusparse_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cusparse.lib
+CUDA_cusparse_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cusparse.lib
 
 //"nppc" library
-CUDA_nppc_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/nppc.lib
+CUDA_nppc_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/nppc.lib
 
 //"nppi" library
 CUDA_nppi_LIBRARY:FILEPATH=CUDA_nppi_LIBRARY-NOTFOUND
 
 //"npps" library
-CUDA_npps_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/npps.lib
+CUDA_npps_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/npps.lib
 
 //"nvcuvenc" library
 CUDA_nvcuvenc_LIBRARY:FILEPATH=CUDA_nvcuvenc_LIBRARY-NOTFOUND
@@ -348,7 +348,7 @@ CUDA_nvcuvenc_LIBRARY:FILEPATH=CUDA_nvcuvenc_LIBRARY-NOTFOUND
 CUDA_nvcuvid_LIBRARY:FILEPATH=CUDA_nvcuvid_LIBRARY-NOTFOUND
 
 //"nvrtc" library
-CUDA_nvrtc_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/nvrtc.lib
+CUDA_nvrtc_LIBRARY:FILEPATH=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/nvrtc.lib
 
 //Value Computed by CMake
 GLFW_BINARY_DIR:STATIC=C:/Users/PC/Documents/Optix/build/support/GLFW
@@ -436,7 +436,7 @@ glad_LIB_DEPENDS:STATIC=general;opengl32;general;glu32;
 imgui_LIB_DEPENDS:STATIC=general;glfw;general;glad;general;opengl32;
 
 //Dependencies for the target
-sutil_7_sdk_LIB_DEPENDS:STATIC=general;glad;general;imgui;general;C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cudart_static.lib;general;winmm.lib;
+sutil_7_sdk_LIB_DEPENDS:STATIC=general;glad;general;imgui;general;C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cudart_static.lib;general;winmm.lib;
 
 
 ########################
@@ -623,10 +623,10 @@ CUDA_SEPARABLE_COMPILATION-ADVANCED:INTERNAL=1
 CUDA_TOOLKIT_INCLUDE-ADVANCED:INTERNAL=1
 //This is the value of the last time CUDA_TOOLKIT_ROOT_DIR was
 // set successfully.
-CUDA_TOOLKIT_ROOT_DIR_INTERNAL:INTERNAL=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2
+CUDA_TOOLKIT_ROOT_DIR_INTERNAL:INTERNAL=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1
 //This is the value of the last time CUDA_TOOLKIT_TARGET_DIR was
 // set successfully.
-CUDA_TOOLKIT_TARGET_DIR_INTERNAL:INTERNAL=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2
+CUDA_TOOLKIT_TARGET_DIR_INTERNAL:INTERNAL=C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1
 //ADVANCED property for variable: CUDA_VERBOSE_BUILD
 CUDA_VERBOSE_BUILD-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_VERSION
@@ -668,7 +668,7 @@ CUDA_parse_cubin:INTERNAL=C:/Users/PC/Documents/Optix/SDK/CMake/FindCUDA/parse_c
 //Location of run_nvcc.cmake
 CUDA_run_nvcc:INTERNAL=C:/Users/PC/Documents/Optix/SDK/CMake/FindCUDA/run_nvcc.cmake
 //Details about finding CUDA
-FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2][C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/bin/nvcc.exe][C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/include][C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/lib/x64/cudart_static.lib][v12.2(5.0)]
+FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1][C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/bin/nvcc.exe][C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/include][C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/lib/x64/cudart_static.lib][v12.1(5.0)]
 //Details about finding OpenGL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[opengl32][c ][v()]
 //Details about finding Threads

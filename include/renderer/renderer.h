@@ -183,6 +183,12 @@ private:
 	std::shared_ptr<HDRTexture> hdrtexture_ = nullptr;
 	cudaArray_t ibl_texture_array_;
 	cudaTextureObject_t ibl_texture_object_;
+	
+	//LUT
+	std::shared_ptr<Texture> lut_texture_ = nullptr;
+	cudaArray_t lut_texture_array_;
+	cudaTextureObject_t lut_texture_object_;
+
 
 	const unsigned int RAYTYPE_ = 2;
 
@@ -220,9 +226,6 @@ private:
 		light_prim_ids_buffer_.cpyHostToDevice(scene_data_.light_prim_ids);
 		light_prim_emission_buffer_.cpyHostToDevice(scene_data_.light_prim_emission);
 
-		std::cout << "Emission" << scene_data_.light_prim_emission << std::endl;
-		std::cout << "Light Primitive" << scene_data_.light_prim_ids << std::endl;
-
 		transform_matrices_buffer_.cpyHostToDevice(transform_matrices_);
 		inv_transform_matrices_buffer_.cpyHostToDevice(inv_transform_matrices_);
 
@@ -241,8 +244,14 @@ private:
 		spdlog::info("number of light ID : {:16d}", scene_data_.light_prim_ids.size());
 		spdlog::info("number of light Emission : {:16d}", scene_data_.light_prim_emission.size());
 
+		//textures
 		textureBind();
+
+		//IBL
 		setSky();
+
+		//LUT;
+		setLUT();
 	}
 
 	void updateIASMatrix(float time) {
@@ -675,6 +684,8 @@ private:
 
 				hg_sbts[sbt_idx].data.ideal_specular = scene_data_.materials[i].ideal_specular;
 
+				hg_sbts[sbt_idx].data.is_thinfilm = scene_data_.materials[i].is_thinfilm;
+
 				OPTIX_CHECK(optixSbtRecordPackHeader(hitgroup_prog_group_, &hg_sbts[sbt_idx]));
 			}
 
@@ -838,6 +849,54 @@ private:
 			spdlog::info("IBL Texture Binded");
 		}
 	}
+
+	//LUT texture bind
+	void setLUT() {
+		Log::DebugLog("LUT texture Load");
+		{
+			lut_texture_ = std::make_shared<Texture>(render_option_.LUT_path,TexType::NonColor);
+
+			cudaResourceDesc res_desc = {};
+
+			cudaChannelFormatDesc channel_desc;
+			int32_t width = lut_texture_->width;
+			int32_t height = lut_texture_->height;
+			int32_t numComponents = 4;
+			int32_t pitch = width * numComponents * sizeof(uint8_t);
+			channel_desc = cudaCreateChannelDesc<uchar4>();
+
+			cudaArray_t& pixelArray = lut_texture_array_;
+			CUDA_CHECK(cudaMallocArray(&pixelArray,
+				&channel_desc,
+				width, height));
+
+			CUDA_CHECK(cudaMemcpy2DToArray(pixelArray,
+				/* offset */0, 0,
+				lut_texture_->pixel,
+				pitch, pitch, height,
+				cudaMemcpyHostToDevice));
+
+			res_desc.resType = cudaResourceTypeArray;
+			res_desc.res.array.array = pixelArray;
+
+			cudaTextureDesc tex_desc = {};
+			tex_desc.addressMode[0] = cudaAddressModeWrap;
+			tex_desc.addressMode[1] = cudaAddressModeWrap;
+			tex_desc.filterMode = cudaFilterModeLinear;
+			tex_desc.readMode = cudaReadModeNormalizedFloat;
+			tex_desc.normalizedCoords = 1;
+			tex_desc.maxAnisotropy = 1;
+			tex_desc.maxMipmapLevelClamp = 99;
+			tex_desc.minMipmapLevelClamp = 0;
+			tex_desc.mipmapFilterMode = cudaFilterModePoint;
+			tex_desc.borderColor[0] = 1.0f;
+			tex_desc.sRGB = 0; //png Convert sRGB
+
+			CUDA_CHECK(cudaCreateTextureObject(&lut_texture_object_, &res_desc, &tex_desc, nullptr));
+			spdlog::info("LUT Texture Binded");
+		}
+	}
+
 public:
 	Renderer() {
 
@@ -853,6 +912,22 @@ public:
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_ias_buffer_)));
+
+		//for (auto& ctex : ctexture_objects_) {
+		//	CUDA_CHECK(cudaDestroyTextureObject(ctex));
+		//}
+
+		//for (auto& carray : carray_objects_) {
+		//	CUDA_CHECK(cudaFreeArray(carray));
+		//}
+
+		//IBL
+		CUDA_CHECK(cudaDestroyTextureObject(ibl_texture_object_));
+		CUDA_CHECK(cudaFreeArray(ibl_texture_array_));
+
+		//LUT Texture
+		CUDA_CHECK(cudaDestroyTextureObject(lut_texture_object_));
+		CUDA_CHECK(cudaFreeArray(lut_texture_array_));
 
 		OPTIX_CHECK(optixPipelineDestroy(optix_pipeline_));
 		OPTIX_CHECK(optixProgramGroupDestroy(hitgroup_prog_group_));
@@ -1081,8 +1156,8 @@ public:
 					camera_pos = render_option_.camera_position;
 					camera_dir = render_option_.camera_direction;
 
-					camera_up = cross(camera_dir, make_float3(0, 1, 0));
-					camera_right = cross(camera_up, camera_dir);
+					camera_right = cross(camera_dir, make_float3(0, 1, 0));
+					camera_up = cross(camera_right, camera_dir);
 				}
 			}
 
@@ -1140,6 +1215,9 @@ public:
 			params.aov_color = reinterpret_cast<float4*>(AOV_Color.d_gpu_buffer);
 			params.aov_normal = reinterpret_cast<float4*>(AOV_Normal.d_gpu_buffer);
 
+			//LUT
+			params.lut_texture = lut_texture_object_;
+
 			CUDA_CHECK(cudaMemcpy(
 				reinterpret_cast<void*>(d_param),
 				&params, sizeof(params),
@@ -1160,6 +1238,7 @@ public:
 
 			Timer denoiseTimer;
 			denoiseTimer.Start();
+
 			//Denoise
 			spdlog::info("Denoising...");
 			spdlog::info("Output Resolution : {}x{}", output_image_width, output_image_height);

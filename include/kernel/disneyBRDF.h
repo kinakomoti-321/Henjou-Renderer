@@ -8,6 +8,11 @@
 #include <kernel/math.h>
 #include <kernel/Payload.h>
 
+static __forceinline__ __device__ float3 getLUT(float2 uv) {
+	return make_float3(tex2D<float4>(params.lut_texture,uv.x,uv.y));
+	
+}
+
 class DisneyBRDF {
 private:
 	float3 m_basecolor;
@@ -19,6 +24,7 @@ private:
 	float m_clearcoat;
 	float m_clearcoatGloss;
 	float m_clearcoatAlpha;
+	bool m_is_thinfilm;
 
 	//Cosine Importance Sampling
 	__forceinline__ __device__ float3 sampleDiffuse(const float2& uv, float& pdf) {
@@ -167,7 +173,7 @@ public:
 		m_clearcoat = prd.clearcoat;
 		m_clearcoatGloss = 1.0;
 		m_clearcoatAlpha = lerp(0.1f, 0.001f, m_clearcoatGloss);
-
+		m_is_thinfilm = prd.is_thinfilm;
 	}
 
 	__device__ float3 evaluateBSDF(const float3& wo, const float3& wi) {
@@ -203,6 +209,12 @@ public:
 		//Specular
 		{
 			float3 F0 = lerp(make_float3(0.08), m_basecolor, m_metallic);
+
+			if (m_is_thinfilm) {
+				float thickness = m_basecolor.x;
+				float cosine = absdot(wi, wm);
+				F0 = getLUT(make_float2(thickness,cosine));
+			}
 			f_specular = specular(wo, wi, F0);
 		}
 

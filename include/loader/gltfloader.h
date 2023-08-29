@@ -1129,7 +1129,6 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 		Material mat;
 		mat.material_name = material.name;
 
-
 		mat.base_color = { float(mat_pram.baseColorFactor[0]),float(mat_pram.baseColorFactor[1]),float(mat_pram.baseColorFactor[2]) };
 		if (mat_pram.baseColorTexture.index != -1) {
 			std::string diffuse_texture_name = model.images[model.textures[mat_pram.baseColorTexture.index].source].uri;
@@ -1242,6 +1241,17 @@ bool gltfloader(const std::string& filepath,const std::string& filename, SceneDa
 				for (; it != itEnd; it++) {
 					if (it->first == "emissiveStrength") {
 						mat.emmision_color *= it->second.Get<double>();
+					}
+				}
+			}
+
+			else if (mat_extensions.first == "ThinFilm") {
+				const tinygltf::Value::Object& o = mat_extensions.second.Get<tinygltf::Value::Object>();
+				tinygltf::Value::Object::const_iterator it(o.begin());
+				tinygltf::Value::Object::const_iterator itEnd(o.end());
+				for (; it != itEnd; it++) {
+					if (it->first == "is_ThinFilm") {
+						mat.is_thinfilm = true;
 					}
 				}
 			}

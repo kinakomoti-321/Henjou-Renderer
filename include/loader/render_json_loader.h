@@ -198,6 +198,9 @@ bool load_json(const std::string& filepath, RenderOption& render_option) {
 		spdlog::info("use_data : {}", render_option.use_date);
 		spdlog::info("save_renderOption : {}", render_option.save_renderOption);
 
+		//LUT Path
+		render_option.LUT_path = jsons["LUT"]["LUT_path"] ;
+
 		if (render_option.save_renderOption) {
 			auto now = std::chrono::system_clock::now();
 			std::time_t end_time = std::chrono::system_clock::to_time_t(now);

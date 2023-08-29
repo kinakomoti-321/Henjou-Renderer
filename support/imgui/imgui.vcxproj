@@ -78,7 +78,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /w34101 /w34189 /w34018 /w34389</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -98,10 +98,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;IMGUI_IMPL_OPENGL_LOADER_GLAD;_USE_MATH_DEFINES;NOMINMAX;GLFW_DLL;GLAD_GLAPI_EXPORT;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -114,7 +114,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /w34101 /w34189 /w34018 /w34389</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <DisableSpecificWarnings>4355;4996;4800</DisableSpecificWarnings>
@@ -136,10 +136,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;IMGUI_IMPL_OPENGL_LOADER_GLAD;_USE_MATH_DEFINES;NOMINMAX;GLFW_DLL;GLAD_GLAPI_EXPORT;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -152,7 +152,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /w34101 /w34189 /w34018 /w34389</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <DisableSpecificWarnings>4355;4996;4800</DisableSpecificWarnings>
@@ -172,10 +172,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;IMGUI_IMPL_OPENGL_LOADER_GLAD;_USE_MATH_DEFINES;NOMINMAX;GLFW_DLL;GLAD_GLAPI_EXPORT;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -188,7 +188,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /w34101 /w34189 /w34018 /w34389</AdditionalOptions>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -207,10 +207,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;IMGUI_IMPL_OPENGL_LOADER_GLAD;_USE_MATH_DEFINES;NOMINMAX;GLFW_DLL;GLAD_GLAPI_EXPORT;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.7.0\include;C:\Users\PC\Documents\Optix\SDK\cuda;C:\Users\PC\Documents\Optix\SDK;C:\Users\PC\Documents\Optix\build\include;C:\Users\PC\Documents\Optix\build;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\PC\Documents\Optix\SDK\support\imgui\.;C:\Users\PC\Documents\Optix\SDK\support\GLFW\include;C:\Users\PC\Documents\Optix\SDK\support\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>

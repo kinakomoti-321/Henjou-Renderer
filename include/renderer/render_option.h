@@ -77,4 +77,8 @@ struct RenderOption {
 
 	bool use_date = false;
 	bool save_renderOption = false;
+
+	//LUT
+	std::string LUT_path;
+
 };

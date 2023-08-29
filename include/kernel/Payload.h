@@ -31,8 +31,11 @@ struct Payload
 	float ior = 1.0;
 	float transmission = 1.0;
 
+	bool is_specular = false;
+
 	float3 emission = { 0.0,0.0,0.0 };
 	bool is_light = false;
+	bool is_thinfilm = false;
 
 	int primitive_id = 0;
 	int instance_id = 0;

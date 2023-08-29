@@ -79,7 +79,7 @@ set(generated_cubin_file_internal "C:/Users/PC/Documents/Optix/build/lib/ptx/$(C
 
 set(CUDA_REMOVE_GLOBAL_MEMORY_SPACE_WARNING ON)
 
-set(CUDA_NVCC_EXECUTABLE "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/bin/nvcc.exe") # path
+set(CUDA_NVCC_EXECUTABLE "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/bin/nvcc.exe") # path
 set(CUDA_NVCC_FLAGS -arch;sm_50;--use_fast_math;-lineinfo;-Wno-deprecated-gpu-targets;--use-local-env;--compiler-options;/D_USE_MATH_DEFINES ;; -rdc;true) # list
 # Build specific configuration flags
 set(CUDA_NVCC_FLAGS_DEBUG -G;-O0 ; )
@@ -87,7 +87,7 @@ set(CUDA_NVCC_FLAGS_RELEASE  ; )
 set(CUDA_NVCC_FLAGS_MINSIZEREL  ; )
 set(CUDA_NVCC_FLAGS_RELWITHDEBINFO  ; )
 set(nvcc_flags -m64;-D_USE_MATH_DEFINES;-DNOMINMAX) # list
-set(CUDA_NVCC_INCLUDE_ARGS "-IC:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/include;-IC:/ProgramData/NVIDIA Corporation/OptiX SDK 7.7.0/include;-IC:/Users/PC/Documents/Optix/SDK/cuda;-IC:/Users/PC/Documents/Optix/SDK;-IC:/Users/PC/Documents/Optix/build/include;-IC:/Users/PC/Documents/Optix/build;-IC:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/include") # list (needs to be in quotes to handle spaces properly).
+set(CUDA_NVCC_INCLUDE_ARGS "-IC:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/include;-IC:/ProgramData/NVIDIA Corporation/OptiX SDK 7.7.0/include;-IC:/Users/PC/Documents/Optix/SDK/cuda;-IC:/Users/PC/Documents/Optix/SDK;-IC:/Users/PC/Documents/Optix/build/include;-IC:/Users/PC/Documents/Optix/build;-IC:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/include") # list (needs to be in quotes to handle spaces properly).
 set(format_flag "-optix-ir") # string
 set(cuda_language_flag ) # list
 
@@ -195,7 +195,7 @@ endmacro()
 
 # For CUDA 2.3 and below, -G -M doesn't work, so remove the -G flag
 # for dependency generation and hope for the best.
-set(CUDA_VERSION 12.2)
+set(CUDA_VERSION 12.1)
 if(CUDA_VERSION VERSION_LESS "3.0")
   cmake_policy(PUSH)
   # CMake policy 0007 NEW states that empty list elements are not

@@ -59,6 +59,7 @@ struct Material
 
 	//Ideal Specular
 	bool ideal_specular = false;
+	bool is_thinfilm = false;
 };
 
 
@@ -76,6 +77,7 @@ std::ostream& operator<<(std::ostream& stream, const Material& f)
 	stream << "emission " << f.emmision_color << " texID : " << f.emmision_color_tex << std::endl;
 	stream << "normal map texID : " << f.normal_tex << std::endl;
 	stream << "ideal specular" << f.ideal_specular << std::endl;
+	stream << "is_thinfilm" << f.is_thinfilm << std::endl;
 
 	return stream;
 }

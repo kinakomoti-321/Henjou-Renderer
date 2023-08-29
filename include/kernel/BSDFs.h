@@ -411,11 +411,11 @@ public:
 		ior_ = 1.0;
 	}
 
-	__device__ MetaMaterialGlass(const float3& rho, const float& ior) :rho_(rho), ior_(ior) {
+	__forceinline__ __device__ MetaMaterialGlass(const float3& rho, const float& ior) :rho_(rho), ior_(ior) {
 
 	}
 
-	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
+	__forceinline__ __device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
 		float ior_o, ior_i;
 		float3 n;
 
@@ -467,61 +467,58 @@ public:
 		return evalbsdf;
 	}
 
-	__device__ float3 evalueateBSDF(const float3& wo, const float3& wi) {
+	__forceinline__ __device__ float3 evalueateBSDF(const float3& wo, const float3& wi) {
+
 		return make_float3(0);
 	}
 
-	__device__ float pdfBSDF(const float3& wo, const float3& wi) {
+	__forceinline__ __device__ float pdfBSDF(const float3& wo, const float3& wi) {
 		return 0;
 	}
-
 };
+
 class BSDF {
 private:
-	float3 basecolor;
-	float roughness;
-	float metallic;
-	float sheen;
-	float clearcoat;
-	float ior;
-	float transmission;
-
+	bool is_specular = false;
 	//Lambert lam;
 	//GGX ggx;
 	MetaMaterialGlass idealglass;
-
 	DisneyBRDF disney;
 
 public:
 	__device__ BSDF() {
-		basecolor = { 1.0,1.0,1.0 };
-		roughness = 1.0;
-		metallic = 1.0;
-		sheen = 0.0;
-		clearcoat = 0.0;
-		ior = 1.0;
-		transmission = 0.0;
+		is_specular = false;
 	}
 
 	__device__ BSDF(const Payload& pyload) {
-		basecolor = pyload.basecolor;
-		metallic = pyload.metallic;
-		//lam = Lambert(basecolor);
-		//ggx = GGX(basecolor, 0.1f);
-		ior = 1.5;
+		is_specular = pyload.is_specular;
+		float ior = 1.5;
 		idealglass = MetaMaterialGlass(make_float3(1.0), ior);
 		disney = DisneyBRDF(pyload);
 	}
 
 	__device__ float3 evaluateBSDF(const float3& wo,const float3& wi) {
-		return disney.evaluateBSDF(wo, wi);
+		if (is_specular) {
+			return idealglass.evalueateBSDF(wo, wi);
+		}
+		else {
+			return disney.evaluateBSDF(wo, wi);
+		}
 	}
 
 	__device__ float3 sampleBSDF(const float3& wo, float3& wi, float& pdf, CMJState& state) {
-		return disney.sampleBSDF(wo, wi, pdf, state);
+		if (is_specular) {
+			return idealglass.sampleBSDF(wo, wi, pdf, state);
+		}
+		else {
+			return disney.sampleBSDF(wo, wi, pdf, state);
+		}
 	}
 
 	__device__ float getPDF(const float3& wo, const float3& wi) {
+		if (is_specular) {
+			return idealglass.pdfBSDF(wo, wi);
+		}
 		return disney.getPDF(wo, wi);
 	}
 };

@@ -39,7 +39,7 @@
   ".", 
 #define SAMPLES_ABSOLUTE_INCLUDE_DIRS \
   "C:/ProgramData/NVIDIA Corporation/OptiX SDK 7.7.0/include", \
-  "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.2/include", 
+  "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.1/include", 
 
 // Signal whether to use NVRTC or not
 #define CUDA_NVRTC_ENABLED 0

@@ -10,14 +10,14 @@
     "Render_mode" : "Default",
 
     "GLTF_file" : {
-        "gltf_filepath" : "./Model/test_gltf/",
-        "gltf_filename" : "cornelbox.gltf"
+        "gltf_filepath" : "./Model/Honban/",
+        "gltf_filename" : "Otera.gltf"
     },
 
     "Camera" : {
         "allow_camera_animation" : true,
-        "camera_position" : [4.0,0.0,0.0],
-        "camera_direction" : [-1.0,0.0,0],
+        "camera_position" : [0.0,1.0,-7.0],
+        "camera_direction" : [0.0,0.0,1.0],
         "camera_fov" : 45.0
     },
 
@@ -27,8 +27,8 @@
 
     "Animation" : {
         "fps" : 24,
-        "start_frame" : 0,
-        "end_frame" : 1,
+        "start_frame": 39,
+        "end_frame" : 40,
         "time_limit" : 3.0
     },
 
@@ -42,6 +42,9 @@
     "Option" : {
         "use_date" : false,
         "save_renderOption" : false
+    },
+    
+    "LUT" :{
+        "LUT_path" : "./LUT/Thin_Film_LUT.png"
     }
-
 }

@@ -271,6 +271,7 @@ __forceinline__ __device__ float3 NEE(float3 firstRayOrigin, float3 firstRayDire
 	return LTE;
 }
 
+
 __forceinline__ __device__ float3 MIS(const float3& firstRayOrigin,const float3& firstRayDirection, CMJState& state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
 	float3 throughput = { 1.0,1.0,1.0 };
@@ -398,7 +399,7 @@ __forceinline__ __device__ float3 MIS(const float3& firstRayOrigin,const float3&
 
 					float invG = light_distance * light_distance / cosine2;
 
-					float lightPdf = getLightPDF(pt_light_hit.primitive_id,pt_light_hit.instance_id) * invG;
+					float lightPdf = (prd.is_specular) ? 0.0 : getLightPDF(pt_light_hit.primitive_id,pt_light_hit.instance_id) * invG;
 					float mis_weight = pt_pdf / (pt_pdf + lightPdf);
 
 					LTE += throughput * mis_weight * cosine1 * pt_light_hit.emission * brdf / pt_pdf;
