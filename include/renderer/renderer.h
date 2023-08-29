@@ -1051,7 +1051,9 @@ public:
 	}
 
 	bool initializeAndRender(const std::string& render_option_path) {
+		Timer OverallTimer;
 
+		OverallTimer.Start();
 		//Initialize
 		{
 			if (!loadRenderOption(render_option_path))
@@ -1067,7 +1069,9 @@ public:
 
 			build();
 		}
-
+		OverallTimer.Stop();	
+		spdlog::info("Initializing finished : {:4f} ms / {:4f} ms",OverallTimer.getTimeS(),render_option_.time_limit * 60.0f);
+		
 		Log::StartLog("Render");
 
 		CUstream stream;
@@ -1132,6 +1136,7 @@ public:
 			float3 camera_up;
 			float3 camera_right;
 			float camera_f;
+			
 
 			//Rendering
 			{
@@ -1236,6 +1241,15 @@ public:
 			timer.Stop();
 			spdlog::info("End render frame{} : {}s", frame, timer.getTimeS());
 
+			//TimeLimit Check
+			OverallTimer.Stop();	
+
+			if (OverallTimer.getTimeS() > render_option_.time_limit * 60.0f) {
+				spdlog::info("Over Time Limit ");
+				CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
+				return 0;
+			}
+
 			Timer denoiseTimer;
 			denoiseTimer.Start();
 
@@ -1287,7 +1301,9 @@ public:
 
 			rendering_timer.Stop();
 			spdlog::info("Frame {} Rendering Finished", params.frame);
-			spdlog::info("Total Elapsed time {} s", rendering_timer.getTimeS());
+
+			OverallTimer.Stop();	
+			spdlog::info("TimeLimit : {:4f} ms / {:4f} ms",OverallTimer.getTimeS(),render_option_.time_limit * 60.0f);
 		}
 
 		CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));

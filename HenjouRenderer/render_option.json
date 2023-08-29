@@ -26,10 +26,10 @@
     },
 
     "Animation" : {
-        "fps" : 24,
-        "start_frame": 59,
+        "fps" : 10,
+        "start_frame": 0,
         "end_frame" : 60,
-        "time_limit" : 3.0
+        "time_limit" : 5.0
     },
 
     "Sky":{

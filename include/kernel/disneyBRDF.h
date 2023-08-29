@@ -28,8 +28,8 @@ private:
 
 	//Cosine Importance Sampling
 	__forceinline__ __device__ float3 sampleDiffuse(const float2& uv, float& pdf) {
-		float theta = 0.5 * acos(1 - 2.0 * uv.x);
-		float phi = 2 * M_PIf * uv.y;
+		float theta = 0.5f * acos(1.0f - 2.0f * uv.x);
+		float phi = 2.0f * M_PIf * uv.y;
 		float cosTheta = cos(theta);
 		float sinTheta = sin(theta);
 		float3 wi = make_float3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);
@@ -57,7 +57,7 @@ private:
 
 	__forceinline__ __device__ float GGX_Lambda(const float3& w) {
 		float delta = 1.0f + (m_alpha * m_alpha * w.x * w.x + m_alpha * m_alpha * w.z * w.z) / (w.y * w.y);
-		return (-1.0 + sqrtf(delta)) * 0.5f;
+		return (-1.0f + sqrtf(delta)) * 0.5f;
 	}
 
 	//https://arxiv.org/pdf/2306.05044.pdf
@@ -104,8 +104,8 @@ private:
 	}
 
 	__forceinline__ __device__ float f_tSchlick(float wn, float F90) {
-		float delta = fmaxf(1.0 - wn, 0.0);
-		return 1.0 + (F90 - 1.0) * delta * delta * delta * delta * delta;
+		float delta = fmaxf(1.0f - wn, 0.0f);
+		return 1.0f + (F90 - 1.0f) * delta * delta * delta * delta * delta;
 	}
 
 	//Specular
@@ -134,7 +134,7 @@ private:
 		//return (alpha * alpha - 1.0) / term1;
 
 		float alpha2 = alpha * alpha;
-		float t = 1.0f + (alpha2 - 1.0) * wm.y * wm.y;
+		float t = 1.0f + (alpha2 - 1.0f) * wm.y * wm.y;
 		return (alpha2 - 1.0f) / (PI * logf(alpha2) * t);
 	}
 
@@ -143,8 +143,8 @@ private:
 		const float3 wm = normalize(wo + wi);
 
 		float clearcoatD = clearcoat_D(wm, clearcoat_alpha);
-		float clearcoatG = clearcoat_G2_HeightCorrelated(wi, wo, 0.25);
-		float3 clearcoatF = shlickFresnel(make_float3(0.04), wo, wm);
+		float clearcoatG = clearcoat_G2_HeightCorrelated(wi, wo, 0.25f);
+		float3 clearcoatF = shlickFresnel(make_float3(0.04f), wo, wm);
 
 		return 0.25f * clearcoatD * clearcoatG * clearcoatF / (fabsf(wo.y) * fabsf(wi.y));
 	}
@@ -153,25 +153,25 @@ private:
 public:
 	__device__ DisneyBRDF() {
 		m_basecolor = make_float3(1);
-		m_alpha = 0.5;
-		m_anisotropic = 0.0;
-		m_metallic = 0.0;
-		m_sheen = 0.0;
-		m_clearcoat = 0.0;
-		m_clearcoatGloss = 1.0;
-		m_clearcoatAlpha = 1.0;
+		m_alpha = 0.5f;
+		m_anisotropic = 0.0f;
+		m_metallic = 0.0f;
+		m_sheen = 0.0f;
+		m_clearcoat = 0.0f;
+		m_clearcoatGloss = 1.0f;
+		m_clearcoatAlpha = 1.0f;
 	}
 
 	__device__ DisneyBRDF(const Payload& prd) {
 		m_basecolor = prd.basecolor;
 		//m_basecolor = make_float3(1.0,1.0,1.0);
 		m_alpha = clamp(prd.roughness * prd.roughness, 0.01f, 1.0f);
-		m_anisotropic = 0.0;
-		m_subsurface = 0.0;
+		m_anisotropic = 0.0f;
+		m_subsurface = 0.0f;
 		m_metallic = prd.metallic;
 		m_sheen = prd.sheen;
 		m_clearcoat = prd.clearcoat;
-		m_clearcoatGloss = 1.0;
+		m_clearcoatGloss = 1.0f;
 		m_clearcoatAlpha = lerp(0.1f, 0.001f, m_clearcoatGloss);
 		m_is_thinfilm = prd.is_thinfilm;
 	}
@@ -189,7 +189,7 @@ public:
 		float dot_wo_n = fabsf(wi.y);
 
 		float cosine_d = absdot(wi, wm);
-		float F_D90 = 0.5 + 2.0 * m_alpha * cosine_d * cosine_d;
+		float F_D90 = 0.5f + 2.0f * m_alpha * cosine_d * cosine_d;
 		float F_SS90 = m_alpha * cosine_d * cosine_d;
 
 		float f_tsi = f_tSchlick(dot_wi_n, F_D90);
@@ -208,7 +208,7 @@ public:
 
 		//Specular
 		{
-			float3 F0 = lerp(make_float3(0.08), m_basecolor, m_metallic);
+			float3 F0 = lerp(make_float3(0.08f), m_basecolor, m_metallic);
 
 			if (m_is_thinfilm) {
 				float thickness = m_basecolor.x;
@@ -220,7 +220,7 @@ public:
 
 		//Sheen
 		{
-			float delta = fmaxf(1.0f - absdot(wi, wm), 0.0);
+			float delta = fmaxf(1.0f - absdot(wi, wm), 0.0f);
 			f_sheen = m_sheen * make_float3(1.0f) * delta * delta * delta * delta * delta;
 		}
 

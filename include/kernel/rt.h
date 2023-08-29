@@ -399,7 +399,7 @@ __forceinline__ __device__ float3 MIS(const float3& firstRayOrigin,const float3&
 
 					float invG = light_distance * light_distance / cosine2;
 
-					float lightPdf = (prd.is_specular) ? 0.0 : getLightPDF(pt_light_hit.primitive_id,pt_light_hit.instance_id) * invG;
+					float lightPdf = (prd.is_specular) ? 0.0f : getLightPDF(pt_light_hit.primitive_id,pt_light_hit.instance_id) * invG;
 					float mis_weight = pt_pdf / (pt_pdf + lightPdf);
 
 					LTE += throughput * mis_weight * cosine1 * pt_light_hit.emission * brdf / pt_pdf;
