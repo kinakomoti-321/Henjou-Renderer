@@ -4,10 +4,10 @@
         "image_height" : 720,
         "image_name" : "output",
         "image_directory" : "./",
-        "max_spp" : 15
+        "max_spp" : 25
     },
 
-    "Render_mode" : "Default",
+    "Render_mode" : "Denoise",
 
     "GLTF_file" : {
         "gltf_filepath" : "./Model/Honban/",

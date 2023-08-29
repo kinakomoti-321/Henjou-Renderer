@@ -36,6 +36,7 @@ enum DenoiseType {
 	NONE,
 	TEMPORAL,
 	UPSCALE2X,
+	NONDENOISE,
 };
 
 class OptixDenoiserManager {
@@ -51,7 +52,7 @@ private:
 
 	unsigned int in_width_ = 0;
 	unsigned int in_height_ = 0;
-	unsigned int out_width_ = 0; 
+	unsigned int out_width_ = 0;
 	unsigned int out_height_ = 0;
 
 	float4* albedo;
@@ -61,9 +62,11 @@ private:
 
 	DenoiseType denoise_type = NONE;
 
+	float denoise_blendfactor_ = 0.0f;
+
 public:
 
-	OptixDenoiserManager(const unsigned int& in_width, const unsigned int& in_height, const unsigned int& out_width,const unsigned int& out_height,
+	OptixDenoiserManager(const unsigned int& in_width, const unsigned int& in_height, const unsigned int& out_width, const unsigned int& out_height,
 		OptixDeviceContext context, CUstream& cu_stream, DenoiseType denoise_type) : context(context), cu_stream(cu_stream), denoise_type(denoise_type) {
 
 		OptixDenoiserOptions options;
@@ -87,6 +90,10 @@ public:
 			break;
 		case UPSCALE2X:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_UPSCALE2X;
+			break;
+		case NONDENOISE:
+			model_kind = OPTIX_DENOISER_MODEL_KIND_HDR;
+			denoise_blendfactor_ = 1.0f;
 			break;
 		default:
 			model_kind = OPTIX_DENOISER_MODEL_KIND_LDR;
@@ -154,7 +161,7 @@ public:
 		layers.output = createOptixImage2D(out_width_, out_height_, output);
 
 		OptixDenoiserParams param;
-		param.blendFactor = 0.0f;
+		param.blendFactor = denoise_blendfactor_;
 		param.hdrIntensity = reinterpret_cast<CUdeviceptr>(nullptr);
 		param.hdrAverageColor = reinterpret_cast<CUdeviceptr>(nullptr);
 

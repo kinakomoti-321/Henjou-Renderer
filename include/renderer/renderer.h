@@ -1110,6 +1110,9 @@ public:
 		if (render_option_.render_mode == RenderMode::DenoiseUpScale2X) {
 			denoise_type = DenoiseType::UPSCALE2X;
 		}
+		else if (render_option_.render_mode == RenderMode::Default) {
+			denoise_type = DenoiseType::NONDENOISE;
+		}
 
 		OptixDenoiserManager denosier_manager(
 			input_image_width, input_image_height,
