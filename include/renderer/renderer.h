@@ -1245,13 +1245,13 @@ public:
 			spdlog::info("End render frame{} : {}s", frame, timer.getTimeS());
 
 			//TimeLimit Check
-			OverallTimer.Stop();	
+			//OverallTimer.Stop();	
 
-			if (OverallTimer.getTimeS() > render_option_.time_limit * 60.0f) {
-				spdlog::info("Over Time Limit ");
-				CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
-				return 0;
-			}
+			//if (OverallTimer.getTimeS() > render_option_.time_limit * 60.0f) {
+			//	spdlog::info("Over Time Limit ");
+			//	CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_param)));
+			//	return 0;
+			//}
 
 			Timer denoiseTimer;
 			denoiseTimer.Start();
@@ -1297,8 +1297,8 @@ public:
 				}
 
 				//–{”ÔŽd—l
-				std::string imagename = str_frame + ".png";
-				//std::string imagename = render_option_.image_name + "_" + str_frame + ".png";
+				//std::string imagename = str_frame + ".png";
+				std::string imagename = render_option_.image_name + "_" + str_frame + ".png";
 				sutil::saveImage(imagename.c_str(), buffer, false);
 			}
 
