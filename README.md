@@ -8,3 +8,6 @@ https://speakerdeck.com/kinakomoti321/henjou-renderer
 ## Feature
 - Thin-Film Interference
 - Meta-Material BTDF(Minus IOR)
+
+## Sample
+![サンプル](sample.png)
