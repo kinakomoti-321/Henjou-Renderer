@@ -1,50 +1,54 @@
 {
     "Image": {
-        "image_width" : 1280,
-        "image_height" : 720,
-        "image_name" : "output",
-        "image_directory" : "./",
-        "max_spp" : 1000
+        "image_width": 1280,
+        "image_height": 720,
+        "image_name": "multiple_scattering_ggx",
+        "image_directory": "./",
+        "max_spp": 5000
     },
-
-    "Render_mode" : "Denoise",
-
-    "GLTF_file" : {
-        "gltf_filepath" : "./Model/Honban/",
-        "gltf_filename" : "Otera.gltf"
+    "Render_mode": "Default",
+    "GLTF_file": {
+        "gltf_filepath": "./Model/RoughnessTest/",
+        "gltf_filename": "Standard_ShaderBall_RoughnessTest.gltf"
     },
-
-    "Camera" : {
-        "allow_camera_animation" : true,
-        "camera_position" : [0.0,1.0,-7.0],
-        "camera_direction" : [0.0,0.0,1.0],
-        "camera_fov" : 45.0
+    "Camera": {
+        "allow_camera_animation": true,
+        "camera_position": [
+            0.0,
+            1.0,
+            -7.0
+        ],
+        "camera_direction": [
+            0.0,
+            0.0,
+            1.0
+        ],
+        "camera_fov": 45.0
     },
-
-    "PTX_File":{
-        "ptxfile_path" : "../lib/ptx/Release/HenjouRenderer_generated_henjouRendererCU.cu.optixir"
+    "PTX_File": {
+        "ptxfile_path": "../lib/ptx/Release/HenjouRenderer_generated_henjouRendererCU.cu.optixir"
     },
-
-    "Animation" : {
-        "fps" : 24,
-        "start_frame": 143,
-        "end_frame" : 144,
-        "time_limit" : 5.0
+    "Animation": {
+        "fps": 24,
+        "start_frame": 1,
+        "end_frame": 2,
+        "time_limit": 5.0
     },
-
-    "Sky":{
-        "IBL_path" : "./HDRI/blocky_photo_studio_4k.hdr",
-        "IBL_intensity" : 1.0,
-        "use_IBL" : false,
-        "scene_sky_default" : [1.0,1.0,1.0]
+    "Sky": {
+        "IBL_path": "./HDRI/blocky_photo_studio_4k.hdr",
+        "IBL_intensity": 1.0,
+        "use_IBL": false,
+        "scene_sky_default": [
+            0.8,
+            0.8,
+            0.8
+        ]
     },
-
-    "Option" : {
-        "use_date" : false,
-        "save_renderOption" : false
+    "Option": {
+        "use_date": true,
+        "save_renderOption": false
     },
-    
-    "LUT" :{
-        "LUT_path" : "./LUT/Thin_Film_LUT.png"
+    "LUT": {
+        "LUT_path": "./LUT/Thin_Film_LUT.png"
     }
 }

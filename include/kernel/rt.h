@@ -76,6 +76,11 @@ __device__ struct Ray {
 	float tmax = 1e16f;
 };
 
+static __forceinline__ __device__ float3 lambert(const float3& basecolor,const float3& wo, float3& wi, float& pdf, CMJState& state) {
+	float2 xi = cmj_2d(state);
+	wi = cosineSampling(xi.x, xi.y, pdf);
+	return basecolor / PI;
+}
 
 __forceinline__ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstRayDirection, CMJState state,float3& aov_albedo,float3& aov_normal) {
 	float3 LTE = { 0.0,0.0,0.0 };
@@ -130,14 +135,18 @@ __forceinline__ __device__ float3 Pathtrace(float3 firstRayOrigin, float3 firstR
 
 		float3 local_wi = { 0.0,1.0,0.0 };
 
-		float2 xi = cmj_2d(state);
 		float3 bsdf;
-
+		
 		{
 			bsdf = surface_bsdf.sampleBSDF(local_wo, local_wi, pdf, state);
+			//bsdf = lambert(prd.basecolor, local_wo, local_wi, pdf, state);
 		}
 
-
+		{
+			//float2 xi = cmj_2d(state);
+			//local_wi = cosineSampling(xi.x, xi.y, pdf);
+			//bsdf = prd.basecolor / PI;
+		}
 		float3 wi = local_to_world(local_wi, t, n, b);
 
 		throughput *= bsdf * fabs(dot(wi, n)) / pdf;
