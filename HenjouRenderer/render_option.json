@@ -8,8 +8,8 @@
     },
     "Render_mode": "Default",
     "GLTF_file": {
-        "gltf_filepath": "./Model/RoughnessTest/",
-        "gltf_filename": "Standard_ShaderBall_RoughnessTest.gltf"
+        "gltf_filepath": "./Model/White_FurnanceTest/GLTF/",
+        "gltf_filename": "WhiteFurnanceTest_Roghness.gltf"
     },
     "Camera": {
         "allow_camera_animation": true,
